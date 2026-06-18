@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:   # allows manual trigger from GitHub UI
+
+env:
+  DOTNET_VERSION: 8.x
+  BUILD_CONFIGURATION: Release
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
+
+      - name: Test
+        run: dotnet test tests/**/*.Tests.csproj
+          --configuration ${{ env.BUILD_CONFIGURATION }}
+          --no-build
+          --collect "XPlat Code Coverage"
+          --results-directory ./coverage
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ./coverage
+
+      - name: Publish Function App
+        run: dotnet publish src/**/*.csproj
+          --configuration ${{ env.BUILD_CONFIGURATION }}
+          --output ./publish
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: function-app-${{ github.sha }}
+          path: ./publish
+          retention-days: 7
