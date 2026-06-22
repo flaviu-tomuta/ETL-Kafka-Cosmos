@@ -1,0 +1,12 @@
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/Shared.Models/bin/Debug/net10.0/Shared.Models.deps.json
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/Shared.Models/bin/Debug/net10.0/Shared.Models.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/Shared.Models/bin/Debug/net10.0/Shared.Models.pdb
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/Shared.Models/obj/Debug/net10.0/Shared.Models.GeneratedMSBuildEditorConfig.editorconfig
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/Shared.Models/obj/Debug/net10.0/Shared.Models.AssemblyInfoInputs.cache
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/Shared.Models/obj/Debug/net10.0/Shared.Models.AssemblyInfo.cs
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/Shared.Models/obj/Debug/net10.0/Shared.Models.csproj.CoreCompileInputs.cache
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/Shared.Models/obj/Debug/net10.0/Shared.Models.sourcelink.json
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/Shared.Models/obj/Debug/net10.0/Shared.Models.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/Shared.Models/obj/Debug/net10.0/refint/Shared.Models.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/Shared.Models/obj/Debug/net10.0/Shared.Models.pdb
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/Shared.Models/obj/Debug/net10.0/ref/Shared.Models.dll
