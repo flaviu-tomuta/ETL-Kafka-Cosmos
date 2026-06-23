@@ -1,0 +1,14 @@
+{
+  "extensions": [
+    {
+      "name": "Kafka",
+      "typeName": "Microsoft.Azure.WebJobs.Extensions.Kafka.KafkaWebJobsStartup, Microsoft.Azure.WebJobs.Extensions.Kafka, Version=4.3.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+      "hintPath": "./.azurefunctions/Microsoft.Azure.WebJobs.Extensions.Kafka.dll"
+    },
+    {
+      "name": "Startup",
+      "typeName": "Microsoft.Azure.WebJobs.Extensions.FunctionMetadataLoader.Startup, Microsoft.Azure.WebJobs.Extensions.FunctionMetadataLoader, Version=1.0.0.0, Culture=neutral, PublicKeyToken=551316b6919f366c",
+      "hintPath": "./.azurefunctions/Microsoft.Azure.WebJobs.Extensions.FunctionMetadataLoader.dll"
+    }
+  ]
+}

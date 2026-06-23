@@ -13,6 +13,7 @@ public static class OnboardingServiceExtensions
         services.AddScoped<IEnrichmentStep, CreditCheckEnrichmentStep>();
         services.AddScoped<IEnrichmentStep, ComplianceEnrichmentStep>();
         services.AddScoped<IHydrationPipeline, HydrationPipeline>();
+        services.AddScoped<IOutputAssembler, OutputAssembler>();
         return services;
     }
 }

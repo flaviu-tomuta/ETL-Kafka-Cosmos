@@ -1,0 +1,26 @@
+[
+  {
+    "name": "OnboardingKafkaFunction",
+    "scriptFile": "Onboarding.Function.dll",
+    "entryPoint": "Onboarding.Function.Functions.OnboardingKafkaFunction.Run",
+    "language": "dotnet-isolated",
+    "properties": {
+      "IsCodeless": false
+    },
+    "bindings": [
+      {
+        "name": "messages",
+        "direction": "In",
+        "type": "kafkaTrigger",
+        "brokerList": "%KafkaTopic%",
+        "topic": "%KafkaBootstrapServers%",
+        "consumerGroup": "onboarding-func",
+        "protocol": "Plaintext",
+        "cardinality": "One",
+        "properties": {
+          "supportsDeferredBinding": "True"
+        }
+      }
+    ]
+  }
+]

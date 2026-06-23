@@ -1,1 +1,2 @@
 STORY-1 | Shared enriched customer data models | pushed | 2026-06-22T17:25:33-04:00 | commit: 5e9d950b40ff99ec38411bd4e904ddad8ec863e1 | branch: feature/pipeline-run-20260622-180658 | remote: https://github.com/flaviu-tomuta/ETL-Kafka-Cosmos.git
+STORY-9 | Hydration pipeline — IEnrichmentStep registration and parallel execution | pushed | 2026-06-22T18:08:00-04:00 | commit: e7a60ebd93e92a515df46f0d03f5356c17821b0e | branch: feature/pipeline-run-20260622-180658 | remote: https://github.com/flaviu-tomuta/ETL-Kafka-Cosmos.git

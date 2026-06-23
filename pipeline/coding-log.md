@@ -1,5 +1,60 @@
 # Coding Log
 
+## STORY-10 — Hydration pipeline — output assembler
+Status: complete
+Files produced:
+- src/Onboarding.Function/Pipeline/OutputAssembler.cs
+- src/Onboarding.Function/DependencyInjection/OnboardingServiceExtensions.cs (updated — added IOutputAssembler registration)
+- tests/Onboarding.Function.Tests/Pipeline/OutputAssemblerTests.cs
+Tests written: 11
+Tests passing: 11
+Notes: >
+  OutputAssembler is sealed, implements IOutputAssembler, and is registered as
+  services.AddScoped<IOutputAssembler, OutputAssembler>() in OnboardingServiceExtensions.
+  Assemble() filters results to applied-only for LastHydrationSteps, sets LastUpdatedBy
+  to "onboarding-app"/"amendment-app" based on TopicRole, and populates all AuditSummary
+  fields from HydrationContext and applied EnrichmentResults.
+  Gap noted: The story technical notes specify LastKafkaOffset = context.Offset but
+  HydrationContext (defined in STORY-2) does not carry a Kafka offset field. LastKafkaOffset
+  is hardcoded to 0 in this implementation; to propagate the real offset, KafkaOffset
+  should be added to HydrationContext in a follow-up.
+  MergeData is intentionally minimal — enrichment steps are stubs at this stage; concrete
+  collection population (Addresses, PhoneNumbers, etc.) will be wired in STORY-11+ when
+  step implementations are fleshed out. The method signature satisfies the interface contract.
+  All 30 Onboarding.Function.Tests pass (19 from STORY-8/9 + 11 new).
+  All 88 Shared.Models.Tests continue to pass.
+
+## STORY-8 — Onboarding function app — Kafka trigger and hosting
+Status: complete
+Files produced:
+- src/Onboarding.Function/Onboarding.Function.csproj
+- src/Onboarding.Function/Program.cs
+- src/Onboarding.Function/host.json
+- src/Onboarding.Function/local.settings.json
+- src/Onboarding.Function/Properties/AssemblyInfo.cs
+- src/Onboarding.Function/Pipeline/IOnboardingPipeline.cs
+- src/Onboarding.Function/Functions/KafkaRawEvent.cs
+- src/Onboarding.Function/Functions/OnboardingKafkaFunction.cs
+- src/Onboarding.Function/DependencyInjection/OnboardingServiceExtensions.cs
+- tests/Onboarding.Function.Tests/Onboarding.Function.Tests.csproj
+- tests/Onboarding.Function.Tests/Functions/OnboardingKafkaFunctionTests.cs
+Tests written: 8
+Tests passing: 8
+Notes: >
+  Azure Functions isolated worker project targeting net10.0 (consistent with Shared.Models).
+  Packages used: Microsoft.Azure.Functions.Worker 2.52.0, Worker.Sdk 2.0.7,
+  Worker.Extensions.Kafka 4.3.0, Worker.ApplicationInsights 2.51.0.
+  The isolated-worker Kafka extension uses KafkaRecord (not KafkaEventData) with Value as
+  byte[], and KafkaHeader with Key (string) + Value (byte[]) decoded via UTF-8.
+  Batch loop extracted to internal ProcessBatchAsync(IEnumerable<KafkaRawEvent>) for
+  testability; InternalsVisibleTo("Onboarding.Function.Tests") added via AssemblyInfo.cs.
+  IOnboardingPipeline defined here (accepts KafkaMessageContext + rawPayload string)
+  so implementations in STORY-11 can proceed without interface changes.
+  AddOnboardingServices() is a stub — concrete registrations added in STORY-9, 10, 11.
+  OutOfMemoryException rethrow tested; error routing (Permanent→DLQ, Transient→retry,
+  Unknown→retry) and BatchCompleted log with accurate counters all tested.
+  All 88 Shared.Models.Tests still pass after this story.
+
 ## STORY-3 — Custom exception hierarchy
 Status: complete
 Files produced:
@@ -121,3 +176,31 @@ Notes: >
   Cosmos emulator and are verified by integration testing — they are not covered in unit tests
   because CosmosClientBuilder.Build() eagerly validates the connection on the dev path.
   All 79 Shared.Models.Tests pass after this story (7 new + 72 pre-existing).
+
+## STORY-9 — Hydration pipeline — IEnrichmentStep registration and parallel execution
+Status: complete
+Files produced:
+- src/Shared.Models/Contracts/IEnrichmentStep.cs (updated — added string StepName { get; })
+- src/Onboarding.Function/Pipeline/HydrationPipeline.cs
+- src/Onboarding.Function/Pipeline/Steps/AddressEnrichmentStep.cs
+- src/Onboarding.Function/Pipeline/Steps/CreditCheckEnrichmentStep.cs
+- src/Onboarding.Function/Pipeline/Steps/ComplianceEnrichmentStep.cs
+- src/Onboarding.Function/DependencyInjection/OnboardingServiceExtensions.cs (updated — DI registrations)
+- tests/Onboarding.Function.Tests/Pipeline/HydrationPipelineTests.cs
+- tests/Onboarding.Function.Tests/Onboarding.Function.Tests.csproj (updated — added Microsoft.Extensions.DependencyInjection 10.0.0)
+- tests/Shared.Models.Tests/ServiceContracts/ServiceContractsTests.cs (updated — added StepName to TestEnrichmentStepA/B fakes)
+Tests written: 11
+Tests passing: 11
+Notes: >
+  IEnrichmentStep was updated to add `string StepName { get; }` — required by HydrationPipeline
+  to construct skipped EnrichmentResults. This is a breaking change to the interface but no
+  concrete implementations existed before this story. The two test fakes in ServiceContractsTests
+  were updated to implement StepName.
+  HydrationPipeline calls AppliesTo twice per step (once to partition applicable/skipped) — this
+  matches the exact pattern in the architecture document and is acceptable since AppliesTo is a
+  pure, cheap boolean check.
+  All three concrete steps are stubs returning Applied=true for all contexts; concrete
+  applicability rules are deferred as specified in the story.
+  DI registration test requires Microsoft.Extensions.DependencyInjection 10.0.0 (matched to the
+  transitive version pulled in by Microsoft.Azure.Functions.Worker).
+  All 88 Shared.Models.Tests pass; all 19 Onboarding.Function.Tests pass (8 from STORY-8 + 11 new).
