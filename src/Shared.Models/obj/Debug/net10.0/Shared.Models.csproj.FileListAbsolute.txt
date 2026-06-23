@@ -10,3 +10,9 @@
 /Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/Shared.Models/obj/Debug/net10.0/refint/Shared.Models.dll
 /Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/Shared.Models/obj/Debug/net10.0/Shared.Models.pdb
 /Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/Shared.Models/obj/Debug/net10.0/ref/Shared.Models.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/Shared.Models/obj/Debug/net10.0/Shared.Models.csproj.AssemblyReference.cache
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/Shared.Models/bin/Debug/net10.0/Microsoft.Azure.Cosmos.ServiceInterop.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/Shared.Models/bin/Debug/net10.0/Cosmos.CRTCompat.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/Shared.Models/bin/Debug/net10.0/msvcp140.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/Shared.Models/bin/Debug/net10.0/vcruntime140.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/Shared.Models/bin/Debug/net10.0/vcruntime140_1.dll

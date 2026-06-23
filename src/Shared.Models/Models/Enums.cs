@@ -7,3 +7,5 @@ public enum AddressType { Primary, Secondary, Mailing, Billing, Previous }
 public enum PhoneType { Mobile, Home, Work, Fax }
 
 public enum EmailType { Personal, Work, Other }
+
+public enum ErrorCategory { Transient, Permanent, Unknown }

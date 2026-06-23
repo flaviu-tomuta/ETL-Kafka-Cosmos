@@ -37,3 +37,25 @@ Notes: >
   installed SDK version) rather than net8.0 — code is fully compatible. No DI
   registration required for pure model/enum types; this project is a class
   library consumed by function app projects in later stories.
+
+## STORY-4 — Error classification
+Status: complete
+Files produced:
+- src/Shared.Models/Models/Enums.cs (ErrorCategory enum appended)
+- src/Shared.Models/ErrorClassification/IErrorClassifier.cs
+- src/Shared.Models/ErrorClassification/ErrorClassifier.cs
+- tests/Shared.Models.Tests/ErrorClassification/ErrorClassifierTests.cs
+Tests written: 14
+Tests passing: 14
+Notes: >
+  ErrorCategory enum (Transient, Permanent, Unknown) appended to existing Enums.cs.
+  IErrorClassifier interface and ErrorClassifier sealed class placed in a new
+  ErrorClassification/ folder within Shared.Models.
+  ErrorClassifier uses a single C# switch expression with pattern matching; no
+  embedded if/else chains.
+  Microsoft.Azure.Cosmos 3.46.0 and Newtonsoft.Json 13.0.3 added to Shared.Models.csproj
+  — Newtonsoft.Json is required by the Cosmos SDK targets check.
+  DI registration (services.AddSingleton<IErrorClassifier, ErrorClassifier>()) is deferred
+  to STORY-5 which creates ServiceCollectionExtensions.AddSharedServices() — this is
+  explicit in the STORY-5 story text and dependency graph.
+  All 63 Shared.Models.Tests pass after this story (14 new + 49 pre-existing).
