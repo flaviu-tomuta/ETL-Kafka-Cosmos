@@ -87,3 +87,37 @@ Notes: >
   to STORY-5 which creates ServiceCollectionExtensions.AddSharedServices() — this is
   explicit in the STORY-5 story text and dependency graph.
   All 63 Shared.Models.Tests pass after this story (14 new + 49 pre-existing).
+
+## STORY-6 — Cosmos DB client and container DI registration
+Status: complete
+Files produced:
+- src/Shared.Models/CosmosDb/CosmosDbExtensions.cs
+- src/Shared.Models/CosmosDb/EnrichedRecordsContainer.cs
+- src/Shared.Models/CosmosDb/AuditMetricsContainer.cs
+- src/Shared.Models/CosmosDb/IdempotencyContainer.cs
+- tests/Shared.Models.Tests/CosmosDb/CosmosDbExtensionsTests.cs
+Tests written: 7
+Tests passing: 7
+Notes: >
+  CosmosDbExtensions.AddCosmosDb() reads CosmosDbConnection and CosmosDbName from
+  IConfiguration; branches on environment.IsDevelopment() for TLS bypass path.
+  Non-dev path: CosmosClientBuilder with WithThrottlingRetryOptions(10s, 5 retries)
+  registered as singleton factory.
+  Dev path: client built with HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
+  then InitializeDevContainersAsync blocks synchronously (.GetAwaiter().GetResult()) to
+  create all three containers via CreateContainerIfNotExistsAsync (idempotent).
+  Container wrapper types (EnrichedRecordsContainer, AuditMetricsContainer,
+  IdempotencyContainer) are sealed records wrapping Container; each registered as singleton
+  factory resolving CosmosClient from DI.
+  Partition keys: enriched-records=/partyId, audit-metrics=/processedDate,
+  idempotency-records=/messageId — match architecture exactly.
+  Microsoft.Extensions.Hosting.Abstractions 9.0.0 added to Shared.Models.csproj.
+  Microsoft.Extensions.Configuration 9.0.0 and Microsoft.Extensions.Hosting.Abstractions
+  9.0.0 added to test project.
+  The well-known Cosmos emulator key in the architecture doc is NOT a valid base64 string
+  (84 non-padding chars, 84 % 4 = 0, so the trailing == is invalid padding). Unit tests use
+  Convert.ToBase64String(new byte[64]) to produce a structurally-valid key.
+  AC1/AC2/AC5 (dev-path TLS bypass, container creation, idempotency) require a running
+  Cosmos emulator and are verified by integration testing — they are not covered in unit tests
+  because CosmosClientBuilder.Build() eagerly validates the connection on the dev path.
+  All 79 Shared.Models.Tests pass after this story (7 new + 72 pre-existing).

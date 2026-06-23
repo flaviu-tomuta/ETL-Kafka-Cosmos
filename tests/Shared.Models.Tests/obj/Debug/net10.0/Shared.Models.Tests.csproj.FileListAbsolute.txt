@@ -130,3 +130,11 @@
 /Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Shared.Models.Tests/bin/Debug/net10.0/runtimes/win/lib/net6.0/System.Windows.Extensions.dll
 /Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Shared.Models.Tests/bin/Debug/net10.0/Microsoft.Extensions.DependencyInjection.dll
 /Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Shared.Models.Tests/bin/Debug/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Shared.Models.Tests/bin/Debug/net10.0/Microsoft.Extensions.Configuration.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Shared.Models.Tests/bin/Debug/net10.0/Microsoft.Extensions.Configuration.Abstractions.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Shared.Models.Tests/bin/Debug/net10.0/Microsoft.Extensions.Diagnostics.Abstractions.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Shared.Models.Tests/bin/Debug/net10.0/Microsoft.Extensions.FileProviders.Abstractions.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Shared.Models.Tests/bin/Debug/net10.0/Microsoft.Extensions.Hosting.Abstractions.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Shared.Models.Tests/bin/Debug/net10.0/Microsoft.Extensions.Logging.Abstractions.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Shared.Models.Tests/bin/Debug/net10.0/Microsoft.Extensions.Options.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Shared.Models.Tests/bin/Debug/net10.0/Microsoft.Extensions.Primitives.dll
