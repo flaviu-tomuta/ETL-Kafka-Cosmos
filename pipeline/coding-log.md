@@ -1,5 +1,46 @@
 # Coding Log
 
+## STORY-14 — Amendment function app — Kafka trigger and hosting
+Status: complete
+Files produced:
+- src/Amendment.Function/Amendment.Function.csproj
+- src/Amendment.Function/Program.cs
+- src/Amendment.Function/host.json
+- src/Amendment.Function/local.settings.json
+- src/Amendment.Function/Properties/AssemblyInfo.cs
+- src/Amendment.Function/Functions/KafkaRawEvent.cs
+- src/Amendment.Function/Functions/AmendmentKafkaFunction.cs
+- src/Amendment.Function/Pipeline/IAmendmentPipeline.cs
+- src/Amendment.Function/Pipeline/NullAmendmentPipeline.cs
+- src/Amendment.Function/DependencyInjection/AmendmentServiceExtensions.cs
+- tests/Amendment.Function.Tests/Amendment.Function.Tests.csproj
+- tests/Amendment.Function.Tests/Functions/AmendmentKafkaFunctionTests.cs
+Tests written: 13
+Tests passing: 13
+Notes: >
+  AmendmentKafkaFunction (sealed) entry point sequence: (1) build KafkaMessageContext with
+  TopicRole="amendment", (2) IsDuplicateAsync — if true log DuplicateMessageSkipped and
+  skip (counted as succeeded), (3) call IAmendmentPipeline.ProcessAsync, (4) on success
+  call IIdempotencyService.MarkProcessedAsync. OutOfMemoryException rethrows; all others
+  classified by IErrorClassifier and routed to IDeadLetterService (Permanent) or
+  IRetryService (Transient/Unknown).
+  KafkaTrigger attribute has ConsumerGroup = "amendment-func" verified via dynamic reflection
+  (attribute name string comparison rather than compile-time type) — avoids a test project
+  compile dependency on the Kafka extension assembly; same approach that onboarding tests use
+  by not testing the attribute at all.
+  IAmendmentPipeline defined as a new interface (mirrors IOnboardingPipeline pattern) with
+  NullAmendmentPipeline stub registered in AddAmendmentServices — concrete implementation
+  backed by IAmendmentOrchestrator will be wired in STORY-17.
+  AddAmendmentServices registers: IAmendmentPipeline → NullAmendmentPipeline (stub),
+  IRetryService → NullRetryService (stub, STORY-18), IDeadLetterService → NullDeadLetterService
+  (stub, STORY-18), IAuditService → NullAuditService (stub, STORY-21), ServiceBusClient
+  (singleton factory from IConfiguration["ServiceBusConnection"]).
+  IIdempotencyService, IVersionGapDetector, IEntityApiClient are already registered in
+  AddSharedServices() and are NOT re-registered in AddAmendmentServices.
+  host.json identical to onboarding-func: adaptive sampling, maxTelemetryItemsPerSecond=20,
+  excludedTypes="Exception;Trace", enableDependencyTracking=true.
+  All 107 Shared.Models.Tests pass. All 46 Onboarding.Function.Tests pass. 13 new tests pass.
+
 ## STORY-13 — Version gap detection and API fallback with caching
 Status: complete
 Files produced:

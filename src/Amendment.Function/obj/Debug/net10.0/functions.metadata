@@ -1,0 +1,26 @@
+[
+  {
+    "name": "AmendmentKafkaFunction",
+    "scriptFile": "Amendment.Function.dll",
+    "entryPoint": "Amendment.Function.Functions.AmendmentKafkaFunction.Run",
+    "language": "dotnet-isolated",
+    "properties": {
+      "IsCodeless": false
+    },
+    "bindings": [
+      {
+        "name": "messages",
+        "direction": "In",
+        "type": "kafkaTrigger",
+        "brokerList": "%KafkaTopic%",
+        "topic": "%KafkaBootstrapServers%",
+        "consumerGroup": "amendment-func",
+        "protocol": "Plaintext",
+        "cardinality": "One",
+        "properties": {
+          "supportsDeferredBinding": "True"
+        }
+      }
+    ]
+  }
+]
