@@ -113,16 +113,18 @@ public sealed class ServiceContractsTests
 
     private sealed class TestEnrichmentStepA : IEnrichmentStep
     {
+        public string StepName => "TestA";
         public bool AppliesTo(HydrationContext context) => true;
         public Task<EnrichmentResult> EnrichAsync(HydrationContext context) =>
-            Task.FromResult(new EnrichmentResult { StepName = "TestA", Applied = true });
+            Task.FromResult(new EnrichmentResult { StepName = StepName, Applied = true });
     }
 
     private sealed class TestEnrichmentStepB : IEnrichmentStep
     {
+        public string StepName => "TestB";
         public bool AppliesTo(HydrationContext context) => true;
         public Task<EnrichmentResult> EnrichAsync(HydrationContext context) =>
-            Task.FromResult(new EnrichmentResult { StepName = "TestB", Applied = true });
+            Task.FromResult(new EnrichmentResult { StepName = StepName, Applied = true });
     }
 
     private sealed class TestAddOperationHandler : IOperationHandler

@@ -4,6 +4,7 @@ namespace Shared.Models.Contracts;
 
 public interface IEnrichmentStep
 {
+    string StepName { get; }
     bool AppliesTo(HydrationContext context);
     Task<EnrichmentResult> EnrichAsync(HydrationContext context);
 }
