@@ -1,5 +1,63 @@
 # Coding Log
 
+## STORY-12 — Amendment idempotency check
+Status: complete
+Files produced:
+- src/Shared.Models/Models/IdempotencyRecord.cs
+- src/Shared.Models/Idempotency/IdempotencyService.cs
+- src/Shared.Models/DependencyInjection/ServiceCollectionExtensions.cs (updated — added IIdempotencyService scoped registration)
+- tests/Shared.Models.Tests/Idempotency/IdempotencyServiceTests.cs
+- tests/Shared.Models.Tests/Shared.Models.Tests.csproj (updated — added Moq 4.20.72 for Container mocking)
+Tests written: 7
+Tests passing: 7
+Notes: >
+  IdempotencyService (sealed) placed in Shared.Models/Idempotency/ because it depends only
+  on IdempotencyContainer (already in Shared.Models) and ILogger<T>. This makes it accessible
+  to the Amendment.Function project created in STORY-14 without circular references.
+  IsDuplicateAsync uses ReadItemAsync<IdempotencyRecord>(messageId, new PartitionKey(messageId));
+  a successful read means duplicate (returns true + logs DuplicateMessageSkipped {MessageId});
+  CosmosException(NotFound) means not a duplicate (returns false, no log).
+  MarkProcessedAsync builds IdempotencyRecord with Id = MessageId = messageId and Ttl = 604800
+  (7 days in seconds), calls CreateItemAsync with partition key messageId, and catches
+  CosmosException(Conflict) as success — the expected race condition when two concurrent
+  executions both try to mark the same message. Non-Conflict CosmosExceptions propagate.
+  Moq 4.20.72 added to Shared.Models.Tests for mocking the abstract Container class.
+  DI test verifies ServiceDescriptor (Scoped lifetime, IdempotencyService implementation type)
+  rather than resolving via GetRequiredService — IdempotencyService requires IdempotencyContainer
+  which is registered by AddCosmosDb() (not AddSharedServices()).
+  All 95 Shared.Models.Tests pass (88 pre-existing + 7 new).
+  All 46 Onboarding.Function.Tests continue to pass.
+
+## STORY-11 — Onboarding pipeline — blind upsert to enriched-records
+Status: complete
+Files produced:
+- src/Onboarding.Function/Pipeline/IOnboardingCosmosWriter.cs
+- src/Onboarding.Function/Pipeline/OnboardingCosmosWriter.cs
+- src/Onboarding.Function/Pipeline/OnboardingPipeline.cs
+- src/Onboarding.Function/DependencyInjection/OnboardingServiceExtensions.cs (updated — added IOnboardingCosmosWriter and IOnboardingPipeline registrations)
+- tests/Onboarding.Function.Tests/Pipeline/OnboardingCosmosWriterTests.cs
+- tests/Onboarding.Function.Tests/Pipeline/OnboardingPipelineTests.cs
+- tests/Onboarding.Function.Tests/Onboarding.Function.Tests.csproj (updated — added Moq 4.20.72 for Container mocking)
+Tests written: 16
+Tests passing: 16
+Notes: >
+  OnboardingCosmosWriter (sealed) injects EnrichedRecordsContainer, calls
+  UpsertItemAsync(entity, new PartitionKey(entity.PartyId)) with no ItemRequestOptions
+  — blind upsert by design, no ETag check.
+  OnboardingPipeline (sealed) orchestrates: build HydrationContext (EntityId=PartyId,
+  StoredVersion=0, IncomingVersion from JSON payload "version" field) → IHydrationPipeline
+  .ExecuteAsync → IOutputAssembler.Assemble → IOnboardingCosmosWriter.WriteAsync →
+  IAuditService.FlushAsync with AuditRecord (Outcome="success").
+  AuditRecord is built inline with all required fields: KafkaContextInfo, VersionInfo,
+  HydrationInfo (applied/skipped steps), RetryInfo (AttemptNumber=1, WasRetry=false).
+  Moq 4.20.72 added to Onboarding.Function.Tests for mocking the abstract Container class.
+  All other pipeline fakes remain hand-rolled (interfaces only need no-framework stubs).
+  DI tests use ServiceDescriptor checks rather than GetRequiredService resolution since
+  OnboardingCosmosWriter depends on EnrichedRecordsContainer which is registered by
+  AddCosmosDb() (not AddOnboardingServices()).
+  All 46 Onboarding.Function.Tests pass (30 from STORY-8/9/10 + 16 new).
+  All 88 Shared.Models.Tests continue to pass.
+
 ## STORY-10 — Hydration pipeline — output assembler
 Status: complete
 Files produced:

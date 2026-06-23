@@ -14,6 +14,8 @@ public static class OnboardingServiceExtensions
         services.AddScoped<IEnrichmentStep, ComplianceEnrichmentStep>();
         services.AddScoped<IHydrationPipeline, HydrationPipeline>();
         services.AddScoped<IOutputAssembler, OutputAssembler>();
+        services.AddScoped<IOnboardingCosmosWriter, OnboardingCosmosWriter>();
+        services.AddScoped<IOnboardingPipeline, OnboardingPipeline>();
         return services;
     }
 }

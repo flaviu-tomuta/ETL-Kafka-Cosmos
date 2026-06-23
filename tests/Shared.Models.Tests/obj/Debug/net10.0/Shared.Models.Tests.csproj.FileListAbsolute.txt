@@ -138,3 +138,8 @@
 /Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Shared.Models.Tests/bin/Debug/net10.0/Microsoft.Extensions.Logging.Abstractions.dll
 /Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Shared.Models.Tests/bin/Debug/net10.0/Microsoft.Extensions.Options.dll
 /Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Shared.Models.Tests/bin/Debug/net10.0/Microsoft.Extensions.Primitives.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Shared.Models.Tests/bin/Debug/net10.0/Castle.Core.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Shared.Models.Tests/bin/Debug/net10.0/Moq.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Shared.Models.Tests/bin/Debug/net10.0/System.Diagnostics.EventLog.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Shared.Models.Tests/bin/Debug/net10.0/runtimes/win/lib/net6.0/System.Diagnostics.EventLog.Messages.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Shared.Models.Tests/bin/Debug/net10.0/runtimes/win/lib/net6.0/System.Diagnostics.EventLog.dll

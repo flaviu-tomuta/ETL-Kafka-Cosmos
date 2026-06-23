@@ -229,3 +229,5 @@
 /Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Onboarding.Function.Tests/obj/Debug/net10.0/Onboarding.Function.Tests.pdb
 /Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Onboarding.Function.Tests/obj/Debug/net10.0/Onboarding.Function.Tests.genruntimeconfig.cache
 /Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Onboarding.Function.Tests/obj/Debug/net10.0/ref/Onboarding.Function.Tests.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Onboarding.Function.Tests/bin/Debug/net10.0/Castle.Core.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Onboarding.Function.Tests/bin/Debug/net10.0/Moq.dll
