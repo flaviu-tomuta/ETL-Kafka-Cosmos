@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "ANikSFctj4o=",
+  "dgSpecHash": "qRyL7I905hc=",
   "success": true,
   "projectFilePath": "/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/Shared.Models/Shared.Models.csproj",
   "expectedPackageFiles": [
@@ -8,6 +8,7 @@
     "/Users/flaviu.tomuta/.nuget/packages/microsoft.azure.cosmos/3.46.0/microsoft.azure.cosmos.3.46.0.nupkg.sha512",
     "/Users/flaviu.tomuta/.nuget/packages/microsoft.bcl.asyncinterfaces/6.0.0/microsoft.bcl.asyncinterfaces.6.0.0.nupkg.sha512",
     "/Users/flaviu.tomuta/.nuget/packages/microsoft.bcl.hashcode/1.1.0/microsoft.bcl.hashcode.1.1.0.nupkg.sha512",
+    "/Users/flaviu.tomuta/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/9.0.0/microsoft.extensions.dependencyinjection.abstractions.9.0.0.nupkg.sha512",
     "/Users/flaviu.tomuta/.nuget/packages/microsoft.win32.systemevents/6.0.0/microsoft.win32.systemevents.6.0.0.nupkg.sha512",
     "/Users/flaviu.tomuta/.nuget/packages/newtonsoft.json/13.0.3/newtonsoft.json.13.0.3.nupkg.sha512",
     "/Users/flaviu.tomuta/.nuget/packages/system.clientmodel/1.1.0/system.clientmodel.1.1.0.nupkg.sha512",

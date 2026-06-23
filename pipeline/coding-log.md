@@ -38,6 +38,34 @@ Notes: >
   registration required for pure model/enum types; this project is a class
   library consumed by function app projects in later stories.
 
+## STORY-5 -- Shared service interfaces, DI extension, and ValidationResult
+Status: complete
+Files produced:
+- src/Shared.Models/Models/ValidationResult.cs
+- src/Shared.Models/Models/AmendmentResult.cs
+- src/Shared.Models/Contracts/IEnrichmentStep.cs
+- src/Shared.Models/Contracts/IOperationHandler.cs
+- src/Shared.Models/Contracts/IAuditService.cs
+- src/Shared.Models/Contracts/IRetryService.cs
+- src/Shared.Models/Contracts/IDeadLetterService.cs
+- src/Shared.Models/Contracts/IHydrationPipeline.cs
+- src/Shared.Models/Contracts/IOutputAssembler.cs
+- src/Shared.Models/Contracts/IIdempotencyService.cs
+- src/Shared.Models/Contracts/IAmendmentOrchestrator.cs
+- src/Shared.Models/Contracts/IVersionGapDetector.cs
+- src/Shared.Models/Contracts/IEntityApiClient.cs
+- src/Shared.Models/DependencyInjection/ServiceCollectionExtensions.cs
+- tests/Shared.Models.Tests/ServiceContracts/ServiceContractsTests.cs
+Tests written: 8
+Tests passing: 8
+Notes: >
+  All 11 service interfaces placed in src/Shared.Models/Contracts/ namespace.
+  ValidationResult and AmendmentResult sealed records placed in Shared.Models.Models.
+  ServiceCollectionExtensions.AddSharedServices() registers IErrorClassifier as singleton.
+  Microsoft.Extensions.DependencyInjection.Abstractions 9.0.0 added to Shared.Models.csproj.
+  Microsoft.Extensions.DependencyInjection 9.0.0 added to test project for DI integration tests.
+  All 72 Shared.Models.Tests pass after this story (8 new + 64 pre-existing).
+
 ## STORY-4 — Error classification
 Status: complete
 Files produced:
