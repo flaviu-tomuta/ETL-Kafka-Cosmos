@@ -1,5 +1,37 @@
 # Coding Log
 
+## STORY-13 — Version gap detection and API fallback with caching
+Status: complete
+Files produced:
+- src/Shared.Models/VersionGap/VersionGapDetector.cs
+- src/Shared.Models/VersionGap/EntityApiClient.cs
+- src/Shared.Models/DependencyInjection/ServiceCollectionExtensions.cs (updated — added IVersionGapDetector scoped, IEntityApiClient typed HttpClient with Polly, AddMemoryCache)
+- src/Shared.Models/Shared.Models.csproj (updated — added Microsoft.ApplicationInsights 2.22.0, Microsoft.Extensions.Caching.Memory 9.0.0, Microsoft.Extensions.Http 9.0.0, Microsoft.Extensions.Http.Resilience 9.0.0)
+- tests/Shared.Models.Tests/VersionGap/VersionGapDetectorTests.cs
+- tests/Shared.Models.Tests/VersionGap/EntityApiClientTests.cs
+- tests/Shared.Models.Tests/Shared.Models.Tests.csproj (updated — added Microsoft.ApplicationInsights 2.22.0, Microsoft.Extensions.Caching.Memory 9.0.0)
+Tests written: 12
+Tests passing: 12
+Notes: >
+  VersionGapDetector (sealed) placed in Shared.Models/VersionGap/ following the same
+  pattern as IdempotencyService — accessible to Amendment.Function (STORY-14) without
+  circular references.
+  Gap formula: gap = incomingVersion - storedVersion; gap >= 2 triggers API fallback;
+  gap < 2 returns messagePayloadData as-is.
+  Cache key: "api-entity-{entityId}-v{incomingVersion}" with 60s absolute expiry via
+  IMemoryCache. Second call with same key returns cached EntityData without HTTP call.
+  TelemetryClient.TrackDependency called in a finally block so success=false is recorded
+  even when GetEntityAtVersionAsync throws. DependencyTelemetry Name = "EntityApi.GetEntityAtVersion".
+  VersionGapDetector.ResolveDataAsync returns EntityData only — the caller (STORY-14's
+  AmendmentOrchestrator or pipeline) is responsible for setting WasApiFallback=true on
+  HydrationContext based on whether gap >= 2 was detected.
+  Story spec says options.Timeout.Timeout but the actual Microsoft.Extensions.Http.Resilience
+  9.0.0 API uses options.AttemptTimeout.Timeout — used the correct API name.
+  TelemetryClient tested via a custom CapturingChannel (ITelemetryChannel) that stores
+  items synchronously; no extra package needed beyond Microsoft.ApplicationInsights.
+  All 107 Shared.Models.Tests pass (95 pre-existing + 12 new).
+  All 46 Onboarding.Function.Tests continue to pass.
+
 ## STORY-12 — Amendment idempotency check
 Status: complete
 Files produced:
