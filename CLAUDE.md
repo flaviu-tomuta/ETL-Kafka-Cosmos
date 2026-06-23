@@ -228,12 +228,28 @@ For each story, verify:
 
 ### Output rules
 
-Write your findings to `pipeline/qc-report.md`:
+`pipeline/qc-report.md` is a running log of all QC verdicts across all stories.
+**Never overwrite this file.** Always append your entry at the top, above all
+existing content.
+
+The shell script prepends a placeholder line before calling you:
+```
+<!-- QC-STORY-<N>-ITER-<N> | <timestamp> | pending -->
+```
+
+Your job is to:
+1. Read the current content of `pipeline/qc-report.md`
+2. Find the placeholder line for this story and iteration
+3. Replace ONLY that placeholder line with your full QC report block
+4. Write the entire file back — your report at the top, all previous entries below
+
+Your report block format:
 
 ```
 ## QC report — STORY-<N> — iteration <N>
+Reviewed at: <ISO timestamp>
 
-### Verdict: PASS | FAIL
+### Verdict: PASS | FAIL | ESCALATE
 
 ### Issues found
 - [ ] <issue description> — <file> line <N>
@@ -243,9 +259,15 @@ Write your findings to `pipeline/qc-report.md`:
 - [x] <check that passed>
 
 ### Recommendation
-PASS   → approved for git push
-FAIL   → return to coding agent with issues listed above
+PASS     → approved for git push
+FAIL     → return to coding agent with issues listed above
+ESCALATE → maximum iterations reached, human review required
+
+---
 ```
+
+The `---` separator at the bottom of your block visually separates it from the
+previous story's entry.
 
 ### Iteration limit rule
 

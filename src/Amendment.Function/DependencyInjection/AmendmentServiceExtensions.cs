@@ -1,3 +1,4 @@
+using Amendment.Function.Handlers;
 using Amendment.Function.Pipeline;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Configuration;
@@ -17,6 +18,10 @@ public static class AmendmentServiceExtensions
                 ?? throw new InvalidOperationException("ServiceBusConnection is not configured")));
 
         services.AddScoped<IAmendmentPipeline, NullAmendmentPipeline>();
+
+        services.AddScoped<IOperationHandler, AddOperationHandler>();
+        services.AddScoped<IOperationHandler, RemoveOperationHandler>();
+        services.AddScoped<IOperationHandler, UpdateOperationHandler>();
 
         // IRetryService and IDeadLetterService — real implementations wired in STORY-18
         services.AddScoped<IRetryService, NullRetryService>();

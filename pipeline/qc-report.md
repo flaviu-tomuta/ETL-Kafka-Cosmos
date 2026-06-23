@@ -1,3 +1,109 @@
+<!-- QC-STORY-15-ITER-1 | 2026-06-23T17:04:55Z | pending -->
+
+## QC report — STORY-15 — iteration 1
+
+### Verdict: PASS
+
+---
+
+### Issues found
+
+None. No correctness or coverage issues identified.
+
+---
+
+### Passed checks
+
+- [x] **Story coverage — AC1 (add appends to correct collection with AddedAt/AddedBy)**: Four tests cover all collection types:
+  - `AddOperationHandler_Apply_AppendsAddressWithAuditFields` — asserts `AddedBy = "amendment-app"`, `AddedAt >= before`, `AddressId`, `Line1` ✓
+  - `AddOperationHandler_Apply_AppendsPhoneNumberWithAuditFields` — asserts `AddedBy`, `PhoneId`, `Number` ✓
+  - `AddOperationHandler_Apply_AppendsEmailAddressWithAuditFields` — asserts `AddedBy`, `EmailId`, `Address` ✓
+  - `AddOperationHandler_Apply_AppendsBankOperationWithAuditFields` — asserts `AddedBy`, `OperationId`, `BankName` ✓
+  - `AddOperationHandler_Apply_PreservesExistingItemsInCollection` — verifies existing items are retained alongside the new one ✓
+- [x] **Story coverage — AC2 (remove by stable ID)**: Four tests cover all collection types:
+  - `RemoveOperationHandler_Apply_RemovesMatchingAddress` ✓
+  - `RemoveOperationHandler_Apply_RemovesMatchingPhoneNumber` ✓
+  - `RemoveOperationHandler_Apply_RemovesMatchingEmailAddress` ✓
+  - `RemoveOperationHandler_Apply_RemovesMatchingBankOperation` ✓
+  - `RemoveOperationHandler_Apply_LeavesOtherAddressesUntouched` — verifies non-matching items are preserved ✓
+- [x] **Story coverage — AC3 (update only specified fields)**: Four tests covering all collection types:
+  - `UpdateOperationHandler_Apply_UpdatesSpecifiedAddressFieldsOnly` — updates `line1`, asserts `line2`, `city`, `addedBy` unchanged ✓
+  - `UpdateOperationHandler_Apply_UpdatesSpecifiedPhoneFields` — updates `number`, asserts `phoneType`, `addedBy` unchanged ✓
+  - `UpdateOperationHandler_Apply_UpdatesSpecifiedEmailFields` — updates `address`, asserts `emailType` unchanged ✓
+  - `UpdateOperationHandler_Apply_UpdatesSpecifiedBankOperationFields` — updates `bankName`, asserts `accountNumber`, `addedBy` unchanged ✓
+  - `UpdateOperationHandler_Apply_LeavesNonMatchingItemsUnchanged` — verifies items not matching the stable ID are untouched ✓
+- [x] **Story coverage — AC4 (no handler ambiguity per OperationType)**: `AllHandlers_HaveUniqueOperationTypes` instantiates all three handlers and asserts `Distinct().Count() == handlers.Count` ✓
+- [x] **TDD compliance**: No failure scenarios are specified in STORY-15 ACs — Validate stubs are the correct behaviour at this story (full validation logic deferred to STORY-16). Happy-path coverage is complete for all four ACs. The story explicitly states stubs return `{ IsRejected = false, IsNoOp = false }`.
+- [x] **Architecture alignment — class names and modifiers**: `AddOperationHandler` (sealed), `RemoveOperationHandler` (sealed), `UpdateOperationHandler` (sealed) — all match architecture document exactly ✓
+- [x] **Architecture alignment — OperationType values**: `"add"`, `"remove"`, `"update"` — match the architecture payload schema and STORY-15 spec ✓
+- [x] **Architecture alignment — AddedBy / AddedAt stamping**: `AddedBy = "amendment-app"`, `AddedAt = DateTimeOffset.UtcNow` on every add path for all four collection types ✓
+- [x] **Architecture alignment — stable ID lookup**: `AddOperationHandler` looks in `operationDetails` for the stable ID (matching architecture example `{ "parameters": {}, "operationDetails": { "emailId": ... } }`); `RemoveOperationHandler` and `UpdateOperationHandler` look in `parameters` (matching `{ "parameters": { "addressId": ... } }`) ✓
+- [x] **Architecture alignment — Validate stubs**: All three handlers return `new() { IsRejected = false, IsNoOp = false }` — correct stub behaviour for STORY-15; full rules implemented in STORY-16 ✓
+- [x] **Lean code**: No dead code, no unused parameters. Private helper methods (`GetString`, `GetBool`, `TryGet`, `TryGetBool`, `TryGetEnum`, `ApplyAddressUpdate`, etc.) are minimal, single-purpose, and non-speculative. `record with {}` spread pattern is clean and correct for immutable updates ✓
+- [x] **DI registration**: All three handlers registered as `IOperationHandler` (Scoped) in `AddAmendmentServices()`:
+  - `services.AddScoped<IOperationHandler, AddOperationHandler>()` ✓
+  - `services.AddScoped<IOperationHandler, RemoveOperationHandler>()` ✓
+  - `services.AddScoped<IOperationHandler, UpdateOperationHandler>()` ✓
+  - `AddAmendmentServices_RegistersAllThreeOperationHandlers` resolves `IEnumerable<IOperationHandler>` and asserts all three `OperationType` values are present ✓
+- [x] **Logging**: Handlers are pure domain functions with no side effects — no logging required or present. Correct for this component type ✓
+- [x] **Error handling / ErrorCategory**: N/A for STORY-15 — Validate stubs always return non-rejected; error classification for operation handlers is STORY-16 ✓
+- [x] **Cosmos partition keys**: N/A — no Cosmos operations in this story ✓
+- [x] **Test count matches log**: 23 tests in `OperationHandlerTests.cs`, 23 reported in coding log ✓
+- [x] **Regression safety**: Coding log confirms all 107 Shared.Models.Tests and 46 Onboarding.Function.Tests continue to pass; 36 Amendment.Function.Tests pass (13 pre-existing + 23 new) ✓
+
+---
+
+### Recommendation
+
+PASS → approved for git push
+
+---
+
+## QC report — STORY-14 — iteration 1
+
+### Verdict: PASS
+
+---
+
+### Issues found
+
+None. No correctness or coverage issues identified.
+
+**Structural observation (not a failure — inherited from STORY-12/13):**
+The story technical notes specify that `AddAmendmentServices()` should register `IIdempotencyService`, `IVersionGapDetector`, and `IEntityApiClient`. In the actual implementation, all three were registered in `AddSharedServices()` during STORY-12 and STORY-13, making them available globally (including to Onboarding.Function which does not need them). The services are correctly available in the DI container when Amendment.Function starts — there is no runtime defect. This is a design placement deviation but not a correctness or coverage problem. Per QC rules, structure deviations that do not affect correctness are not fails.
+
+**Informational — net10.0 vs net8.0:**
+`Amendment.Function.csproj` targets `net10.0` rather than the `net8.0` specified in the story and architecture document. This is consistent with every other project in the codebase (established in STORY-1 and STORY-8) and reflects the installed SDK version. Not a failure.
+
+---
+
+### Passed checks
+
+- [x] **Story coverage — AC1**: `Run_Method_HasKafkaTriggerWithAmendmentConsumerGroup` verifies `KafkaTriggerAttribute` with `ConsumerGroup = "amendment-func"` via reflection. Trigger is wired on `%KafkaTopic%` / `%KafkaBootstrapServers%` from configuration.
+- [x] **Story coverage — AC2**: Three tests cover the idempotency-first path: `ProcessBatchAsync_DuplicateMessage_PipelineIsNotCalled`, `ProcessBatchAsync_DuplicateMessage_MarkProcessedAsyncNotCalled`, and `ProcessBatchAsync_DuplicateMessage_LogsDuplicateMessageSkipped`. `IsDuplicateAsync` is called before `_pipeline.ProcessAsync` in the batch loop.
+- [x] **Story coverage — AC3**: `ProcessBatchAsync_NonDuplicateMessage_TopicRoleIsAmendment` uses `CapturingPipeline` to assert `context.TopicRole == "amendment"`.
+- [x] **Story coverage — AC4**: `ProcessBatchAsync_OutOfMemoryException_RethrowsWithoutRouting` confirms `OutOfMemoryException` rethrows and neither DLQ nor retry service is called.
+- [x] **TDD compliance**: All failure scenarios are covered — permanent exception → dead-letter, transient → retry, unknown → retry (treated as transient), OOM rethrow, pipeline failure suppresses `MarkProcessedAsync`.
+- [x] **Architecture alignment**: Class named `AmendmentKafkaFunction` (sealed) — matches architecture document exactly. Entry point sequence is (1) build context, (2) idempotency check, (3) pipeline, (4) mark processed — matches story spec.
+- [x] **Lean code**: No dead code, no unused parameters, no speculative abstractions. Null stubs (`NullRetryService`, `NullDeadLetterService`, `NullAuditService`) are minimal and clearly scoped as stubs pending STORY-18/21.
+- [x] **DI registration**: `AddAmendmentServices()` registers `IAmendmentPipeline`, `IRetryService`, `IDeadLetterService`, `IAuditService`, and `ServiceBusClient` (singleton). `IIdempotencyService`, `IVersionGapDetector`, `IEntityApiClient` are available via `AddSharedServices()`. All services required by `AmendmentKafkaFunction` are resolvable at startup.
+- [x] **Logging**: `ILogger<AmendmentKafkaFunction>` with structured message templates — `"DuplicateMessageSkipped {MessageId} {EntityId} {TopicRole}"`, `"MessageProcessingFailed {MessageId} {EntityId} {Category} {ExceptionType}"`, `"BatchCompleted total={Total} succeeded={Succeeded} transientFailures={Transient} permanentFailures={Permanent}"`. No string interpolation in log templates.
+- [x] **Error handling**: `OutOfMemoryException` rethrows. `ErrorCategory.Permanent` → `IDeadLetterService.SendAsync` with `attempt: 1`. `Transient` and `Unknown` → `IRetryService.EnqueueAsync` with `attemptCount: 1`. `IErrorClassifier` used correctly.
+- [x] **Cosmos partition keys**: N/A — STORY-14 makes no direct Cosmos writes (reads/writes are in STORY-12 idempotency service, not this function's entry-point code).
+- [x] **host.json**: Identical to onboarding-func — `maxTelemetryItemsPerSecond: 20`, `excludedTypes: "Exception;Trace"`, `enableDependencyTracking: true`, log levels `Information` for default and Function.
+- [x] **Test count**: 13 tests written and passing, covering all 4 ACs plus additional failure, routing, and batch-counter scenarios.
+- [x] **InternalsVisibleTo**: `AssemblyInfo.cs` exposes `internal` `ProcessBatchAsync` to `Amendment.Function.Tests` — same testability pattern as Onboarding.Function.
+- [x] **Batch counter accuracy**: `ProcessBatchAsync_MixedBatch_LogsBatchCompletedWithCorrectCounts` asserts `total=3`, `succeeded=2`, `permanentFailures=1`, `transientFailures=0` — duplicate skips count as succeeded.
+- [x] **Batch isolation**: `ProcessBatchAsync_OneMessageFails_RemainingMessagesAreProcessed` confirms a failing message does not halt other messages in the same batch.
+
+---
+
+### Recommendation
+
+PASS → approved for git push
+
+---
+
 ## QC report — STORY-13 — iteration 1
 
 ### Verdict: PASS

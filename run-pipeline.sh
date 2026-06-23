@@ -182,7 +182,32 @@ get_story_title() {
 }
 
 get_qc_verdict() {
-  grep -oE 'Verdict: (PASS|FAIL|ESCALATE)' "$QC_REPORT" | tail -1 | sed 's/Verdict: //'
+  # Read only the most recent verdict — first match from top of file
+  # since new entries are prepended, the first Verdict line is always the latest
+  grep -oE 'Verdict: (PASS|FAIL|ESCALATE)' "$QC_REPORT" | head -1 | sed 's/Verdict: //'
+}
+
+# Prepend a new QC entry to the top of qc-report.md
+# so the latest verdict is always at the top and the file is never overwritten
+prepend_qc_placeholder() {
+  local story_id=$1
+  local iteration=$2
+  local timestamp
+  timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+  local placeholder="<!-- QC-STORY-${story_id}-ITER-${iteration} | ${timestamp} | pending -->"
+
+  if [ -f "$QC_REPORT" ]; then
+    # File exists — prepend placeholder above existing content
+    local existing
+    existing=$(cat "$QC_REPORT")
+    printf '%s
+
+%s
+' "$placeholder" "$existing" > "$QC_REPORT"
+  else
+    # First run — create the file
+    echo "$placeholder" > "$QC_REPORT"
+  fi
 }
 
 # ── AGENT 1 — story writer ────────────────────────────────────────────────────
@@ -274,23 +299,67 @@ run_agent_3() {
 
   log_agent "Agent 3 (QC) — checking STORY-${story_id} iteration ${iteration}/${MAX_QC_ITERATIONS}"
 
-  claude --print \
-    "Follow the /agent-qc instructions in CLAUDE.md exactly.
-    Review the code produced for STORY-${story_id}.
-    This is iteration ${iteration} of ${MAX_QC_ITERATIONS}.
-    
-    Read these files:
-    - pipeline/stories.md (find STORY-${story_id} acceptance criteria)
-    - pipeline/coding-log.md (files produced for this story)
-    - docs/architecture-recap.md (verify class names and patterns)
-    - All src/ and tests/ files listed in the coding log for this story
-    
-    Write your verdict to pipeline/qc-report.md.
-    If iteration is ${MAX_QC_ITERATIONS} and issues remain, set verdict to ESCALATE." \
-    --allowedTools "Read,Write" \
-    2>&1 | tee pipeline/agent3-story${story_id}-iter${iteration}.log
+  # Prepend a placeholder at the top of qc-report.md before the agent runs.
+  # The agent replaces this placeholder with its actual report.
+  # This avoids any create-vs-append confusion — the file always exists
+  # and the agent always writes at the top.
+  prepend_qc_placeholder "$story_id" "$iteration"
 
-  get_qc_verdict
+  local max_retries=3
+  local attempt=1
+  local verdict=""
+
+  while [ "$attempt" -le "$max_retries" ]; do
+    log_agent "QC write attempt ${attempt}/${max_retries} for STORY-${story_id} iteration ${iteration}"
+
+    claude \
+      "Follow the /agent-qc instructions in CLAUDE.md exactly.
+      Review the code produced for STORY-${story_id}.
+      This is QC iteration ${iteration} of ${MAX_QC_ITERATIONS}.
+
+      Read these files:
+      - pipeline/stories.md (find STORY-${story_id} acceptance criteria)
+      - pipeline/coding-log.md (files produced for this story)
+      - docs/architecture-recap.md (verify class names and patterns)
+      - All src/ and tests/ files listed in the coding log for this story
+
+      IMPORTANT — writing your report:
+      - pipeline/qc-report.md already exists and already has content
+      - Read the current content of pipeline/qc-report.md first
+      - Find the placeholder line: <!-- QC-STORY-${story_id}-ITER-${iteration} | ... | pending -->
+      - Replace that placeholder line with your full QC report for this story
+      - Do NOT delete or overwrite any other entries already in the file
+      - The file must contain all previous QC entries plus your new one at the top
+
+      If iteration ${MAX_QC_ITERATIONS} and issues remain, set verdict to ESCALATE." \
+      --allowedTools "Read,Write" \
+      2>&1 | tee pipeline/agent3-story${story_id}-iter${iteration}-attempt${attempt}.log
+
+    # Verify the placeholder was replaced — if it still says "pending" the write failed
+    if grep -q "<!-- QC-STORY-${story_id}-ITER-${iteration}.*pending -->" "$QC_REPORT"; then
+      log_error "QC report write failed (placeholder still present) — retrying (${attempt}/${max_retries})"
+      attempt=$((attempt + 1))
+      sleep 2
+    else
+      verdict=$(get_qc_verdict)
+      if [ -n "$verdict" ]; then
+        log_ok "QC report written successfully — verdict: $verdict"
+        break
+      else
+        log_error "QC verdict not found in report — retrying (${attempt}/${max_retries})"
+        attempt=$((attempt + 1))
+        sleep 2
+      fi
+    fi
+  done
+
+  if [ "$attempt" -gt "$max_retries" ]; then
+    log_error "QC agent failed to write report after ${max_retries} attempts for STORY-${story_id}"
+    pause_for_human "Agent 3 could not write pipeline/qc-report.md for STORY-${story_id}. Check the log at pipeline/agent3-story${story_id}-iter${iteration}-attempt${max_retries}.log and write the verdict manually before continuing."
+    verdict=$(get_qc_verdict)
+  fi
+
+  echo "$verdict"
 }
 
 # ── AGENT 4 — git push ────────────────────────────────────────────────────────

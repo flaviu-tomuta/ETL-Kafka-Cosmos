@@ -1,5 +1,35 @@
 # Coding Log
 
+## STORY-15 — Amendment conditional logic — operation handlers
+Status: complete
+Files produced:
+- src/Amendment.Function/Handlers/AddOperationHandler.cs
+- src/Amendment.Function/Handlers/RemoveOperationHandler.cs
+- src/Amendment.Function/Handlers/UpdateOperationHandler.cs
+- src/Amendment.Function/DependencyInjection/AmendmentServiceExtensions.cs (updated — added IOperationHandler registrations for all three handlers)
+- tests/Amendment.Function.Tests/Handlers/OperationHandlerTests.cs
+Tests written: 23
+Tests passing: 23
+Notes: >
+  AddOperationHandler (sealed): OperationType = "add" — determines target collection from
+  which stable ID key is present in operationDetails (addressId → Addresses, phoneId →
+  PhoneNumbers, emailId → EmailAddresses, operationId → BankOperations). New items get
+  AddedAt = DateTimeOffset.UtcNow and AddedBy = "amendment-app". Existing collection items
+  preserved via record `with` spread syntax.
+  RemoveOperationHandler (sealed): OperationType = "remove" — stable ID looked up in
+  parameters; removes matching item from collection, leaves all others unchanged.
+  UpdateOperationHandler (sealed): OperationType = "update" — stable ID in parameters
+  identifies target; operationDetails specifies only the fields to patch. Uses nullable-return
+  helper TryGet/TryGetBool/TryGetEnum so missing keys fall back to the existing field value,
+  ensuring non-specified fields are unchanged.
+  Validate stubs on all three handlers return ValidationResult { IsRejected = false, IsNoOp =
+  false } — full validation rules implemented in STORY-16.
+  All three registered as IOperationHandler (Scoped) in AddAmendmentServices(). DI test
+  resolves IEnumerable<IOperationHandler> and asserts "add", "remove", "update" types present.
+  AC4 (no handler ambiguity) verified by asserting distinct OperationType count equals handler count.
+  All 107 Shared.Models.Tests pass. All 46 Onboarding.Function.Tests pass.
+  36 Amendment.Function.Tests pass (13 pre-existing + 23 new).
+
 ## STORY-14 — Amendment function app — Kafka trigger and hosting
 Status: complete
 Files produced:
