@@ -7,8 +7,37 @@ public sealed class RemoveOperationHandler : IOperationHandler
 {
     public string OperationType => "remove";
 
-    public ValidationResult Validate(Operation operation, EnrichedCustomer storedEntity) =>
-        new() { IsRejected = false, IsNoOp = false };
+    public ValidationResult Validate(Operation operation, EnrichedCustomer storedEntity)
+    {
+        Dictionary<string, object> parameters = operation.Parameters;
+
+        if (parameters.TryGetValue("addressId", out object? addrId))
+        {
+            string id = addrId.ToString()!;
+            if (!storedEntity.Addresses.Any(a => a.AddressId == id))
+                return new() { IsRejected = true, Reason = "RecordNotFound" };
+        }
+        else if (parameters.TryGetValue("phoneId", out object? phoneId))
+        {
+            string id = phoneId.ToString()!;
+            if (!storedEntity.PhoneNumbers.Any(p => p.PhoneId == id))
+                return new() { IsRejected = true, Reason = "RecordNotFound" };
+        }
+        else if (parameters.TryGetValue("emailId", out object? emailId))
+        {
+            string id = emailId.ToString()!;
+            if (!storedEntity.EmailAddresses.Any(e => e.EmailId == id))
+                return new() { IsRejected = true, Reason = "RecordNotFound" };
+        }
+        else if (parameters.TryGetValue("operationId", out object? opId))
+        {
+            string id = opId.ToString()!;
+            if (!storedEntity.BankOperations.Any(b => b.OperationId == id))
+                return new() { IsRejected = true, Reason = "RecordNotFound" };
+        }
+
+        return new() { IsRejected = false, IsNoOp = false };
+    }
 
     public EnrichedCustomer Apply(Operation operation, EnrichedCustomer storedEntity)
     {

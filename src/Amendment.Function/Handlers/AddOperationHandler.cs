@@ -7,8 +7,46 @@ public sealed class AddOperationHandler : IOperationHandler
 {
     public string OperationType => "add";
 
-    public ValidationResult Validate(Operation operation, EnrichedCustomer storedEntity) =>
-        new() { IsRejected = false, IsNoOp = false };
+    public ValidationResult Validate(Operation operation, EnrichedCustomer storedEntity)
+    {
+        Dictionary<string, object> details = operation.OperationDetails;
+
+        if (details.ContainsKey("addressId"))
+        {
+            string id = GetString(details, "addressId");
+            if (storedEntity.Addresses.Any(a => a.AddressId == id))
+                return new() { IsRejected = true, Reason = "DuplicateRecord" };
+
+            if (GetBool(details, "isPreferred") && storedEntity.Addresses.Any(a => a.IsPreferred))
+                return new() { IsRejected = true, Reason = "IsPreferredConflict" };
+        }
+        else if (details.ContainsKey("phoneId"))
+        {
+            string id = GetString(details, "phoneId");
+            if (storedEntity.PhoneNumbers.Any(p => p.PhoneId == id))
+                return new() { IsRejected = true, Reason = "DuplicateRecord" };
+
+            if (GetBool(details, "isPreferred") && storedEntity.PhoneNumbers.Any(p => p.IsPreferred))
+                return new() { IsRejected = true, Reason = "IsPreferredConflict" };
+        }
+        else if (details.ContainsKey("emailId"))
+        {
+            string id = GetString(details, "emailId");
+            if (storedEntity.EmailAddresses.Any(e => e.EmailId == id))
+                return new() { IsRejected = true, Reason = "DuplicateRecord" };
+
+            if (GetBool(details, "isPreferred") && storedEntity.EmailAddresses.Any(e => e.IsPreferred))
+                return new() { IsRejected = true, Reason = "IsPreferredConflict" };
+        }
+        else if (details.ContainsKey("operationId"))
+        {
+            string id = GetString(details, "operationId");
+            if (storedEntity.BankOperations.Any(b => b.OperationId == id))
+                return new() { IsRejected = true, Reason = "DuplicateRecord" };
+        }
+
+        return new() { IsRejected = false, IsNoOp = false };
+    }
 
     public EnrichedCustomer Apply(Operation operation, EnrichedCustomer storedEntity)
     {

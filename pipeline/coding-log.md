@@ -1,5 +1,34 @@
 # Coding Log
 
+## STORY-16 — Amendment conditional logic — validator
+Status: complete
+Files produced:
+- src/Amendment.Function/Handlers/AddOperationHandler.cs (updated — real Validate logic replacing stub)
+- src/Amendment.Function/Handlers/RemoveOperationHandler.cs (updated — real Validate logic replacing stub)
+- src/Amendment.Function/Handlers/UpdateOperationHandler.cs (updated — real Validate logic replacing stub; added IsNoOp helpers)
+- src/Amendment.Function/Handlers/OperationHandlerResolver.cs (new — static Resolve method throws BusinessRuleViolationException for unknown OperationType)
+- tests/Amendment.Function.Tests/Handlers/ValidatorTests.cs (new — 21 tests covering all ACs)
+- tests/Amendment.Function.Tests/Handlers/OperationHandlerTests.cs (updated — two stale stub tests replaced with valid-scenario tests)
+Tests written: 21
+Tests passing: 55 (Amendment.Function.Tests total; 21 new + 34 carried forward)
+Notes: >
+  AddOperationHandler.Validate: checks stable ID from operationDetails against the stored
+  collection for DuplicateRecord; checks isPreferred conflict against the same collection.
+  RemoveOperationHandler.Validate: checks stable ID from parameters against the stored
+  collection for RecordNotFound — returns RecordNotFound immediately if item absent.
+  UpdateOperationHandler.Validate: checks RecordNotFound first; then IsPreferredConflict for
+  addresses/phones/emails when update sets isPreferred=true on a non-preferred item and another
+  item in the same collection is already preferred; finally checks per-collection no-op helpers
+  (IsAddressNoOp, IsPhoneNoOp, IsEmailNoOp, IsBankOperationNoOp) — if ALL specified
+  operationDetails fields match the existing record, returns IsNoOp=true.
+  OperationHandlerResolver (static class): Resolve(handlers, operationType, entityId, messageId)
+  — throws BusinessRuleViolationException(RuleName="UnknownOperationType") when no handler
+  matches; used by AmendmentOrchestrator in STORY-17.
+  Two previously-stub Validate tests in OperationHandlerTests.cs updated to use entities that
+  contain the referenced items, matching the now-real validation semantics.
+  All 107 Shared.Models.Tests pass. All 46 Onboarding.Function.Tests pass. All 55
+  Amendment.Function.Tests pass.
+
 ## STORY-15 — Amendment conditional logic — operation handlers
 Status: complete
 Files produced:

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Onboarding.Function.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b0ad5e8bccb78b40f37145381ccc8296ad4bb8d1")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9e127b90820f9f2c813ba949ff228dd8249599be")]
 [assembly: System.Reflection.AssemblyProductAttribute("Onboarding.Function.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Onboarding.Function.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

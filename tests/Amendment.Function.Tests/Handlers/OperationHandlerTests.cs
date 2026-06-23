@@ -18,7 +18,7 @@ public sealed class OperationHandlerTests
     }
 
     [Fact]
-    public void AddOperationHandler_Validate_ReturnsNotRejectedNotNoOp()
+    public void AddOperationHandler_Validate_NewAddress_NotInCollection_ReturnsValid()
     {
         IOperationHandler handler = new AddOperationHandler();
         Operation operation = new() { OperationType = "add", OperationDetails = new() { ["addressId"] = "addr-new" } };
@@ -181,11 +181,12 @@ public sealed class OperationHandlerTests
     }
 
     [Fact]
-    public void RemoveOperationHandler_Validate_ReturnsNotRejectedNotNoOp()
+    public void RemoveOperationHandler_Validate_AddressExists_ReturnsNotRejectedNotNoOp()
     {
         IOperationHandler handler = new RemoveOperationHandler();
+        Address addr = new() { AddressId = "addr-001" };
+        EnrichedCustomer entity = new() { Addresses = [addr] };
         Operation operation = new() { OperationType = "remove", Parameters = new() { ["addressId"] = "addr-001" } };
-        EnrichedCustomer entity = new();
 
         ValidationResult result = handler.Validate(operation, entity);
 
@@ -280,11 +281,17 @@ public sealed class OperationHandlerTests
     }
 
     [Fact]
-    public void UpdateOperationHandler_Validate_ReturnsNotRejectedNotNoOp()
+    public void UpdateOperationHandler_Validate_AddressExistsWithDifferentData_ReturnsNotRejectedNotNoOp()
     {
         IOperationHandler handler = new UpdateOperationHandler();
-        Operation operation = new() { OperationType = "update", Parameters = new() { ["addressId"] = "addr-001" } };
-        EnrichedCustomer entity = new();
+        Address addr = new() { AddressId = "addr-001", Line1 = "Old St", City = "X", State = "Y", PostalCode = "00000", Country = "US" };
+        EnrichedCustomer entity = new() { Addresses = [addr] };
+        Operation operation = new()
+        {
+            OperationType    = "update",
+            Parameters       = new() { ["addressId"] = "addr-001" },
+            OperationDetails = new() { ["line1"] = "New St" }
+        };
 
         ValidationResult result = handler.Validate(operation, entity);
 
