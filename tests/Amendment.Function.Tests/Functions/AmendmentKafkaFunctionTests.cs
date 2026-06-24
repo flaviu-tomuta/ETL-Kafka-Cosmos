@@ -288,6 +288,64 @@ public sealed class AmendmentKafkaFunctionTests
         Assert.Equal(2, pipeline.CallCount);
     }
 
+    // STORY-19 AC1: 5-message batch where message 3 throws JsonException — 4 succeed, 1 dead-lettered
+    [Fact]
+    public async Task ProcessBatchAsync_FiveMessageBatch_ThirdMessageThrowsJsonException_FourSucceedAndOneDeadLettered()
+    {
+        FakeIdempotencyService idempotency = new();
+        for (int i = 0; i < 5; i++) idempotency.QueueDuplicate(isDuplicate: false);
+        FakePipeline pipeline = new();
+        pipeline.QueueSuccess();
+        pipeline.QueueSuccess();
+        pipeline.QueueException(new System.Text.Json.JsonException("bad json"));
+        pipeline.QueueSuccess();
+        pipeline.QueueSuccess();
+        FakeDeadLetterService dlq = new();
+        FakeRetryService retry = new();
+        FakeLogger logger = new();
+
+        AmendmentKafkaFunction sut = BuildSut(pipeline: pipeline, idempotency: idempotency,
+            deadLetter: dlq, retry: retry, logger: logger);
+
+        await sut.ProcessBatchAsync([
+            ValidEvent("p1", "m1"),
+            ValidEvent("p2", "m2"),
+            ValidEvent("p3", "m3"),
+            ValidEvent("p4", "m4"),
+            ValidEvent("p5", "m5")
+        ]);
+
+        Assert.Equal(5, pipeline.CallCount);
+        Assert.Single(dlq.Calls);
+        Assert.Empty(retry.Calls);
+        string? batchLog = logger.Warnings.FirstOrDefault(m => m.Contains("BatchCompleted"));
+        Assert.NotNull(batchLog);
+        Assert.Contains("total=5", batchLog);
+        Assert.Contains("succeeded=4", batchLog);
+        Assert.Contains("permanentFailures=1", batchLog);
+        Assert.Contains("transientFailures=0", batchLog);
+    }
+
+    // STORY-19 technical note: error log per failed message carries MessageId, EntityId, Category, ExceptionType
+    [Fact]
+    public async Task ProcessBatchAsync_FailedMessage_LogsMessageProcessingFailedWithStructuredProperties()
+    {
+        FakeIdempotencyService idempotency = new();
+        idempotency.QueueDuplicate(isDuplicate: false);
+        FakePipeline pipeline = new();
+        pipeline.QueueException(new System.Text.Json.JsonException("bad json"));
+        FakeLogger logger = new();
+
+        AmendmentKafkaFunction sut = BuildSut(pipeline: pipeline, idempotency: idempotency, logger: logger);
+
+        await sut.ProcessBatchAsync([ValidEvent("party-1", "msg-abc")]);
+
+        Assert.Contains(logger.Errors, m =>
+            m.Contains("MessageProcessingFailed") &&
+            m.Contains("msg-abc") &&
+            m.Contains("party-1"));
+    }
+
     private static AmendmentKafkaFunction BuildSut(
         IAmendmentPipeline? pipeline = null,
         FakeIdempotencyService? idempotency = null,
