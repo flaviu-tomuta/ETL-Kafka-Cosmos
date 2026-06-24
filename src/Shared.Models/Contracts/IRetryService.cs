@@ -4,5 +4,5 @@ namespace Shared.Models.Contracts;
 
 public interface IRetryService
 {
-    Task EnqueueAsync(KafkaMessageContext context, string originalPayload, int attemptCount);
+    Task EnqueueAsync(KafkaMessageContext context, string originalPayload, int attemptCount, bool isImmediate = false);
 }

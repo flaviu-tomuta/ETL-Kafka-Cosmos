@@ -1,5 +1,70 @@
 # Coding Log
 
+## STORY-18 — Dead-letter and retry flow — Service Bus integration
+Status: complete
+Files produced:
+- src/Amendment.Function/ServiceBus/RetryService.cs
+- src/Amendment.Function/ServiceBus/DeadLetterService.cs
+- src/Shared.Models/Contracts/IRetryService.cs (updated — added bool isImmediate = false optional parameter)
+- src/Amendment.Function/DependencyInjection/AmendmentServiceExtensions.cs (updated — replaced NullRetryService/NullDeadLetterService stubs with real RetryService and DeadLetterService registrations)
+- src/Amendment.Function/Functions/AmendmentKafkaFunction.cs (updated — added CosmosException PreconditionFailed detection to pass isImmediate: true to retry service)
+- tests/Amendment.Function.Tests/ServiceBus/RetryServiceTests.cs
+- tests/Amendment.Function.Tests/ServiceBus/DeadLetterServiceTests.cs
+- tests/Amendment.Function.Tests/Functions/AmendmentKafkaFunctionTests.cs (updated — FakeRetryService tracks IsImmediate; new ETag conflict test)
+- tests/Amendment.Function.Tests/Orchestrator/AmendmentOrchestratorTests.cs (updated — TrackingRetryService matches new interface signature)
+Tests written: 14
+Tests passing: 77 (Amendment.Function.Tests total; 14 new + 63 carried forward)
+Notes: >
+  RetryService (sealed): injects ServiceBusClient (singleton) and ILogger<RetryService>.
+  EnqueueAsync checks nextAttemptCount (attemptCount + 1) against MaxAttempts = 3.
+  Below max: creates sender for {topicRole}-retry, builds ServiceBusMessage with all 7
+  ApplicationProperties (messageId, partyId, topic, partition, offset, topicRole, attemptCount),
+  sets ScheduledEnqueueTime = UtcNow + 30s normally or UtcNow when isImmediate = true.
+  At or above max: routes to {topicRole}-deadletter queue and emits LogError
+  "MessageDeadLettered {MessageId} {EntityId} MaxRetriesExhausted attempt={finalAttemptCount}".
+  DeadLetterService (sealed): injects ServiceBusClient (singleton) and ILogger<DeadLetterService>.
+  SendAsync always sends to {topicRole}-deadletter with all 7 ApplicationProperties and emits
+  LogError "MessageDeadLettered {MessageId} {EntityId} {Reason} attempt={Attempt}".
+  IRetryService interface updated with bool isImmediate = false optional parameter (backward-
+  compatible: all existing callers at call sites compile unchanged; implementing classes updated).
+  AmendmentKafkaFunction.ProcessBatchAsync updated to detect CosmosException(PreconditionFailed)
+  and pass isImmediate: true so ETag conflicts enqueue with ScheduledEnqueueTime = UtcNow (no
+  30-second delay) per AC5. Using Azure.Cosmos and System.Net imports added to function.
+  NullRetryService and NullDeadLetterService stubs removed from AmendmentServiceExtensions —
+  real implementations registered as Scoped. NullAuditService stub retained for STORY-21.
+  All 107 Shared.Models.Tests pass. All 46 Onboarding.Function.Tests pass.
+  All 77 Amendment.Function.Tests pass (14 new + 63 carried forward).
+
+
+## STORY-17 — Amendment conditional logic — orchestrator and ETag-gated upsert
+Status: complete
+Files produced:
+- src/Amendment.Function/Orchestrator/AmendmentOrchestrator.cs
+- src/Amendment.Function/Pipeline/AmendmentPipeline.cs
+- src/Amendment.Function/DependencyInjection/AmendmentServiceExtensions.cs (updated — IAmendmentOrchestrator and AmendmentPipeline registered; NullAmendmentPipeline stub removed)
+- tests/Amendment.Function.Tests/Orchestrator/AmendmentOrchestratorTests.cs
+- tests/Amendment.Function.Tests/Amendment.Function.Tests.csproj (updated — added Moq 4.20.72)
+Tests written: 8
+Tests passing: 63 (Amendment.Function.Tests total; 8 new + 55 carried forward)
+Notes: >
+  AmendmentOrchestrator (sealed, public) placed in Amendment.Function/Orchestrator/.
+  Three-pass design: Pass 1 validates all ops; violations throw BusinessRuleViolationException
+  with first violation Reason as RuleName; noOps accumulated for skip in Pass 2.
+  Pass 2 applies non-no-op ops sequentially; updatedEntity patched with Version+1,
+  LastUpdatedAt, LastUpdatedBy="amendment-app", and AuditSummary from KafkaMessageContext.
+  Pass 3 ETag-gated UpsertItemAsync using response.ETag from ReadItemAsync.
+  NotFound during Read caught explicitly: IRetryService.EnqueueAsync called and IsNoOp=true
+  returned without rethrowing. ETag 412 not caught — propagates to batch handler (Transient).
+  After upsert: IIdempotencyService.MarkProcessedAsync then IAuditService.FlushAsync.
+  AmendmentKafkaFunction (STORY-14) also calls MarkProcessedAsync after ProcessAsync — the
+  second call hits 409 Conflict which is swallowed in IdempotencyService (harmless by design).
+  AmendmentPipeline (internal sealed) replaces NullAmendmentPipeline stub: deserializes
+  rawPayload and delegates to IAmendmentOrchestrator.OrchestrateAsync.
+  Moq 4.20.72 added to Amendment.Function.Tests for mocking abstract Container class.
+  All 107 Shared.Models.Tests pass. All 46 Onboarding.Function.Tests pass.
+  All 63 Amendment.Function.Tests pass (8 new + 55 carried forward).
+
+
 ## STORY-16 — Amendment conditional logic — validator
 Status: complete
 Files produced:

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "6wJikJ5OD7U=",
+  "dgSpecHash": "FufgvqAkg6g=",
   "success": true,
   "projectFilePath": "/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/tests/Amendment.Function.Tests/Amendment.Function.Tests.csproj",
   "expectedPackageFiles": [
@@ -8,6 +8,7 @@
     "/Users/flaviu.tomuta/.nuget/packages/azure.core.amqp/1.3.1/azure.core.amqp.1.3.1.nupkg.sha512",
     "/Users/flaviu.tomuta/.nuget/packages/azure.identity/1.17.0/azure.identity.1.17.0.nupkg.sha512",
     "/Users/flaviu.tomuta/.nuget/packages/azure.messaging.servicebus/7.19.0/azure.messaging.servicebus.7.19.0.nupkg.sha512",
+    "/Users/flaviu.tomuta/.nuget/packages/castle.core/5.1.1/castle.core.5.1.1.nupkg.sha512",
     "/Users/flaviu.tomuta/.nuget/packages/coverlet.collector/6.0.4/coverlet.collector.6.0.4.nupkg.sha512",
     "/Users/flaviu.tomuta/.nuget/packages/google.protobuf/3.32.1/google.protobuf.3.32.1.nupkg.sha512",
     "/Users/flaviu.tomuta/.nuget/packages/grpc.core.api/2.65.0/grpc.core.api.2.65.0.nupkg.sha512",
@@ -75,6 +76,7 @@
     "/Users/flaviu.tomuta/.nuget/packages/microsoft.testplatform.objectmodel/17.14.1/microsoft.testplatform.objectmodel.17.14.1.nupkg.sha512",
     "/Users/flaviu.tomuta/.nuget/packages/microsoft.testplatform.testhost/17.14.1/microsoft.testplatform.testhost.17.14.1.nupkg.sha512",
     "/Users/flaviu.tomuta/.nuget/packages/microsoft.win32.systemevents/6.0.0/microsoft.win32.systemevents.6.0.0.nupkg.sha512",
+    "/Users/flaviu.tomuta/.nuget/packages/moq/4.20.72/moq.4.20.72.nupkg.sha512",
     "/Users/flaviu.tomuta/.nuget/packages/newtonsoft.json/13.0.3/newtonsoft.json.13.0.3.nupkg.sha512",
     "/Users/flaviu.tomuta/.nuget/packages/polly.core/8.4.2/polly.core.8.4.2.nupkg.sha512",
     "/Users/flaviu.tomuta/.nuget/packages/polly.extensions/8.4.2/polly.extensions.8.4.2.nupkg.sha512",

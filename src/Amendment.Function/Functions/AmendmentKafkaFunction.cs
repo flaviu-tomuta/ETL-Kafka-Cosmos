@@ -1,6 +1,8 @@
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using Amendment.Function.Pipeline;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Extensions.Kafka;
 using Microsoft.Extensions.Logging;
@@ -116,7 +118,11 @@ public sealed class AmendmentKafkaFunction
                 {
                     transientFailures++;
                     if (ctx is not null)
-                        await _retryService.EnqueueAsync(ctx, rawEvent.RawPayload, attemptCount: 1);
+                    {
+                        bool isImmediate = ex is CosmosException ce
+                            && ce.StatusCode == HttpStatusCode.PreconditionFailed;
+                        await _retryService.EnqueueAsync(ctx, rawEvent.RawPayload, attemptCount: 1, isImmediate);
+                    }
                 }
             }
         }

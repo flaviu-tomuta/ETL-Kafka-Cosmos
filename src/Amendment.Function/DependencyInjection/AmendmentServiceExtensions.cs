@@ -1,5 +1,7 @@
 using Amendment.Function.Handlers;
+using Amendment.Function.Orchestrator;
 using Amendment.Function.Pipeline;
+using Amendment.Function.ServiceBus;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,32 +19,20 @@ public static class AmendmentServiceExtensions
                 sp.GetRequiredService<IConfiguration>()["ServiceBusConnection"]
                 ?? throw new InvalidOperationException("ServiceBusConnection is not configured")));
 
-        services.AddScoped<IAmendmentPipeline, NullAmendmentPipeline>();
-
         services.AddScoped<IOperationHandler, AddOperationHandler>();
         services.AddScoped<IOperationHandler, RemoveOperationHandler>();
         services.AddScoped<IOperationHandler, UpdateOperationHandler>();
 
-        // IRetryService and IDeadLetterService — real implementations wired in STORY-18
-        services.AddScoped<IRetryService, NullRetryService>();
-        services.AddScoped<IDeadLetterService, NullDeadLetterService>();
+        services.AddScoped<IAmendmentOrchestrator, AmendmentOrchestrator>();
+        services.AddScoped<IAmendmentPipeline, AmendmentPipeline>();
+
+        services.AddScoped<IRetryService, RetryService>();
+        services.AddScoped<IDeadLetterService, DeadLetterService>();
 
         // IAuditService — real implementation wired in STORY-21
         services.AddScoped<IAuditService, NullAuditService>();
 
         return services;
-    }
-
-    private sealed class NullRetryService : IRetryService
-    {
-        public Task EnqueueAsync(KafkaMessageContext context, string originalPayload, int attemptCount)
-            => Task.CompletedTask;
-    }
-
-    private sealed class NullDeadLetterService : IDeadLetterService
-    {
-        public Task SendAsync(KafkaMessageContext context, string originalPayload, string reason, int attempt)
-            => Task.CompletedTask;
     }
 
     private sealed class NullAuditService : IAuditService

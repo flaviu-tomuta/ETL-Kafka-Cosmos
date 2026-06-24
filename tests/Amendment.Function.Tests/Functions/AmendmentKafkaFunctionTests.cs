@@ -1,6 +1,8 @@
+using System.Net;
 using System.Reflection;
 using Amendment.Function.Functions;
 using Amendment.Function.Pipeline;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Shared.Models.Contracts;
 using Shared.Models.ErrorClassification;
@@ -217,6 +219,26 @@ public sealed class AmendmentKafkaFunctionTests
         Assert.Single(retry.Calls);
     }
 
+    // AC5 (STORY-18): ETag conflict (PreconditionFailed) → retry with isImmediate = true
+    [Fact]
+    public async Task ProcessBatchAsync_ETagConflict_EnqueuesToRetryWithIsImmediate()
+    {
+        FakeIdempotencyService idempotency = new();
+        idempotency.QueueDuplicate(isDuplicate: false);
+        FakePipeline pipeline = new();
+        CosmosException etagConflict = new(
+            "ETag conflict", HttpStatusCode.PreconditionFailed, 0, "activity-1", 1.0);
+        pipeline.QueueException(etagConflict);
+        FakeRetryService retry = new();
+
+        AmendmentKafkaFunction sut = BuildSut(pipeline: pipeline, idempotency: idempotency, retry: retry);
+
+        await sut.ProcessBatchAsync([ValidEvent()]);
+
+        Assert.Single(retry.Calls);
+        Assert.True(retry.Calls[0].IsImmediate);
+    }
+
     // BatchCompleted log with accurate counts (duplicates count as succeeded)
     [Fact]
     public async Task ProcessBatchAsync_MixedBatch_LogsBatchCompletedWithCorrectCounts()
@@ -346,11 +368,11 @@ public sealed class AmendmentKafkaFunctionTests
 
     private sealed class FakeRetryService : IRetryService
     {
-        public List<(KafkaMessageContext Context, string Payload, int AttemptCount)> Calls { get; } = [];
+        public List<(KafkaMessageContext Context, string Payload, int AttemptCount, bool IsImmediate)> Calls { get; } = [];
 
-        public Task EnqueueAsync(KafkaMessageContext context, string originalPayload, int attemptCount)
+        public Task EnqueueAsync(KafkaMessageContext context, string originalPayload, int attemptCount, bool isImmediate = false)
         {
-            Calls.Add((context, originalPayload, attemptCount));
+            Calls.Add((context, originalPayload, attemptCount, isImmediate));
             return Task.CompletedTask;
         }
     }
