@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DlqAdmin.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+64de4afb0eb5a3730b5ee9d929af04e84944d10f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ca4b35a443c9cecd5b536e01cdfb4a6757ce96db")]
 [assembly: System.Reflection.AssemblyProductAttribute("DlqAdmin.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DlqAdmin.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

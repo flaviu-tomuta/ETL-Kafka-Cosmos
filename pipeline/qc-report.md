@@ -1,4 +1,90 @@
-<!-- QC-STORY-23-ITER-1 | 2026-06-24T18:04:55Z | pending -->
+## QC report — STORY-24 — iteration 1
+Reviewed at: 2026-06-24T18:45:00Z
+
+### Verdict: PASS
+
+### Issues found
+
+None.
+
+Note on test coverage: This story produces only infrastructure configuration files (`docker-compose.yml`, `Config.json`, `local.settings.json`, `README.md`). All four acceptance criteria describe operational behaviour (container startup, `func start` connectivity, console logging, volume wipe) that cannot be unit-tested without a live container runtime and process execution. Zero unit tests is the correct outcome — noted as justified exception per the coding log.
+
+### Passed checks
+
+- [x] **AC1 — All five service groups accessible on required ports**: `docker-compose.yml` defines kafka (9092), cosmos (8081), servicebus (5672/5300), azurite (10000–10002), sqlserver (1433) with exact image tags from technical notes (`cp-kafka:7.6.0`, `azure-cosmos-emulator:vnext-preview`, `servicebus-emulator:latest`, `mssql/server:2022-latest`, `azurite`) ✓
+- [x] **AC1 — Cosmos emulator constraints**: `platform: linux/amd64` and `mem_limit: 2g` present ✓
+- [x] **AC2 — func start connects to localhost:9092 and https://localhost:8081**: Both `local.settings.json` files set `KafkaBootstrapServers=localhost:9092` and `CosmosDbConnection` with `https://localhost:8081` and the well-known emulator key ✓
+- [x] **AC2 — Three Cosmos containers auto-created on startup**: `CosmosDbExtensions.AddCosmosDb()` calls `CreateDatabaseIfNotExistsAsync` + three `CreateContainerIfNotExistsAsync` calls, gated by `environment.IsDevelopment()` ✓
+- [x] **AC3 — APPLICATIONINSIGHTS_CONNECTION_STRING is empty**: Both `local.settings.json` files set `"APPLICATIONINSIGHTS_CONNECTION_STRING": ""` — Azure Functions runtime falls back to console logging when this is absent ✓
+- [x] **AC4 — Clean state on `podman-compose down -v`**: No named volumes defined; `-v` removes all anonymous container volumes, giving a clean state on next `up -d` ✓
+- [x] **Service Bus Config.json volume mount**: `./Config.json:/ServiceBus_Emulator/ConfigFiles/Config.json:Z` — filename and path exact per technical notes ✓
+- [x] **Config.json queues**: `onboarding-retry` and `amendment-retry` both have `DeadLetterOnMessageExpiration: true`; `onboarding-deadletter` and `amendment-deadletter` present without that flag ✓
+- [x] **local.settings.json shared values**: `AzureWebJobsStorage=UseDevelopmentStorage=true`, `FUNCTIONS_WORKER_RUNTIME=dotnet-isolated` in both files ✓
+- [x] **Prerequisites in README**: Podman Desktop, `pip3 install podman-compose`, `npm install -g azure-functions-core-tools@4` documented with quick-start commands ✓
+- [x] **Lean configuration**: No speculative services or unused environment variables ✓
+
+### Recommendation
+PASS → approved for git push
+
+---
+
+## QC report — STORY-23 — iteration 2
+Reviewed at: 2026-06-24T18:30:00Z
+
+### Verdict: PASS
+
+### Issues found
+
+None. The single iteration-1 issue has been resolved.
+
+### Passed checks
+
+- [x] **AC3 fix verified** — `togglePayload` condition corrected to `el.style.display === 'block' ? 'none' : 'block'` (`index.html` line 138). First click now sets `display = 'block'` (inline `style` starts as `''`, `'' === 'block'` is `false` → else branch → `'block'`). Expand reveals the payload on first click ✓
+- [x] **AC1 — Queue selector present**: onboarding-deadletter / amendment-deadletter buttons with `selectQueue()` handlers ✓
+- [x] **AC2 — All 7 message fields rendered**: partyId, topic, partition, offset, reason, attempts, deadLetteredAt ✓
+- [x] **AC3 — Expand button reveals raw body**: `togglePayload` correctly toggles `<pre class="payload">` between hidden and visible on first and subsequent clicks ✓
+- [x] **AC4 — Requeue with confirm() + POST + auto-refresh**: `requeueMessage()` guards with `confirm()`, uses `method: 'POST'`, calls `loadMessages()` on success ✓
+- [x] **AC5 — Discard with confirm() + DELETE + auto-refresh**: `discardMessage()` guards with `confirm()`, uses `method: 'DELETE'`, calls `loadMessages()` on success ✓
+- [x] **AC6 — Metric cards**: Total + EntityNotFound + InvalidStateTransition + HydrationFailed cards present; `renderMetrics()` counts by `m.reason` ✓
+- [x] **Static file serving**: `app.UseDefaultFiles()` before `app.UseStaticFiles()` in `Program.cs` ✓
+- [x] **7 UI tests passing** via `WebApplicationFactory<Program>`, all ACs covered ✓
+- [x] **XSS protection**: `esc()` HTML-encodes all user-controlled strings before innerHTML injection ✓
+- [x] **Lean code, no dead code, no framework dependency** ✓
+
+### Recommendation
+PASS → approved for git push
+
+---
+
+## QC report — STORY-23 — iteration 1
+Reviewed at: 2026-06-24T18:15:00Z
+
+### Verdict: FAIL
+
+### Issues found
+
+- [ ] **AC3 violated — `togglePayload` expand logic is off-by-one** — `src/DlqAdmin/wwwroot/index.html` line 138
+      The function checks `el.style.display === 'none'`, but on first render the inline `style` attribute is `''` (empty string) — the CSS class `.payload` sets `display: none` via stylesheet, not inline. On the first click, `'' === 'none'` is `false` so the function sets `el.style.display = 'none'` (no visible change). The payload only becomes visible on the **second** click, violating AC3.
+      Suggested fix: reverse the condition — `el.style.display = el.style.display === 'block' ? 'none' : 'block';`
+
+### Passed checks
+
+- [x] **AC1 — Queue selector present**: `index.html` has buttons for `onboarding-deadletter` and `amendment-deadletter` with `selectQueue()` onclick handlers (lines 53–54). `UiTests.IndexHtml_ContainsQueueSelectorForBothDeadletterQueues` passes ✓
+- [x] **AC2 — Message fields displayed**: `renderMessages()` renders partyId, topic, partition, offset, reason, attempts, deadLetteredAt for each message (lines 108–114). `fetch('/api/dlq/' + currentQueue)` is the data source (line 73). `UiTests.IndexHtml_ContainsMessageFieldDisplayForAllRequiredFields` asserts all 7 fields ✓
+- [x] **AC4 — Requeue with confirm() and POST**: `requeueMessage()` calls `confirm()` (line 142), uses `method: 'POST'` (line 144), calls `loadMessages()` on success (line 145). `UiTests.IndexHtml_ContainsRequeueWithPostAndConfirmDialog` asserts "Requeue", "requeue", "POST", "confirm(" ✓
+- [x] **AC5 — Discard with confirm() and DELETE**: `discardMessage()` calls `confirm()` (line 156), uses `method: 'DELETE'` (line 158), calls `loadMessages()` on success (line 160). `UiTests.IndexHtml_ContainsDiscardWithDeleteMethod` asserts "Discard" and "DELETE" ✓
+- [x] **AC6 — Metric cards**: HTML has Total, EntityNotFound, InvalidStateTransition, HydrationFailed metric cards (lines 33–50). `renderMetrics()` counts messages by reason (lines 86–94). `UiTests.IndexHtml_ContainsMetricCardsForAllThreeFailureReasons` asserts all three ✓
+- [x] **Static file serving**: `app.UseDefaultFiles()` added before `app.UseStaticFiles()` in `Program.cs` (lines 9–10). `UiTests.GetIndexHtml_ReturnsOkWithHtmlContentType` asserts 200 OK + `text/html` ✓
+- [x] **7 UI tests present**: All 7 acceptance-criterion integration tests in `UiTests.cs` using `WebApplicationFactory<Program>` ✓
+- [x] **XSS protection**: `esc()` helper HTML-encodes `&`, `<`, `>`, `"`, `'` before injecting message data into innerHTML (lines 127–134) ✓
+- [x] **Plain HTML/JS, no framework**: No npm packages, no bundler, pure `fetch()` API ✓
+- [x] **`public partial class Program {}`**: Present at line 90 of `Program.cs`, enabling `WebApplicationFactory<Program>` ✓
+- [x] **Lean code**: No dead code, no speculative abstractions ✓
+
+### Recommendation
+FAIL → return to coding agent with issues listed above
+
+---
 
 ## QC report — STORY-22 — iteration 1 (re-review after fix)
 Reviewed at: 2026-06-24T11:00:00Z

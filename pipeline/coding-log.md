@@ -1,6 +1,35 @@
 # Coding Log
 
-## STORY-23 — DLQ admin tool — UI
+## STORY-24 — Local development environment setup
+Status: complete
+Files produced:
+- local-env/docker-compose.yml
+- local-env/Config.json
+- src/Onboarding.Function/local.settings.json
+- src/Amendment.Function/local.settings.json
+- README.md (updated — prerequisites and quick-start commands added)
+Tests written: 0
+Tests passing: N/A
+Notes: >
+  This story is purely infrastructure configuration — docker-compose.yml, Service Bus Config.json,
+  and local.settings.json files. All acceptance criteria describe operational behaviour (services
+  starting on specific ports, func connecting to localhost, logs to console) that cannot be
+  unit-tested without a live container runtime. No unit tests are appropriate here; this is noted
+  as a justified exception per the blocker-note provision in CLAUDE.md.
+  docker-compose.yml: six services — zookeeper (2181), kafka (9092, cp-kafka:7.6.0),
+  cosmos (8081, vnext-preview, linux/amd64, mem_limit=2g), sqlserver (1433, 2022-latest),
+  servicebus (5672/5300, with Config.json volume mount :Z), azurite (10000–10002).
+  Config.json: four queues — onboarding-retry (DeadLetterOnMessageExpiration:true),
+  onboarding-deadletter, amendment-retry (DeadLetterOnMessageExpiration:true), amendment-deadletter.
+  local.settings.json (both function apps): AzureWebJobsStorage=UseDevelopmentStorage=true,
+  FUNCTIONS_WORKER_RUNTIME=dotnet-isolated, KafkaBootstrapServers=localhost:9092,
+  CosmosDbConnection with well-known emulator key, APPLICATIONINSIGHTS_CONNECTION_STRING="".
+  Dev-init (container auto-create) is implemented in CosmosDbExtensions.AddCosmosDb(), gated by
+  IsDevelopment() — satisfies AC2 without any Program.cs change in this story.
+  README.md updated with prerequisites (Podman Desktop, podman-compose, azure-functions-core-tools)
+  and quick-start commands for both function apps.
+
+## STORY-23 — DLQ admin tool — UI (iteration 2 fix)
 Status: complete
 Files produced:
 - src/DlqAdmin/Program.cs (updated — added app.UseDefaultFiles() before app.UseStaticFiles())
@@ -8,6 +37,7 @@ Files produced:
 - tests/DlqAdmin.Tests/UI/UiTests.cs
 Tests written: 7
 Tests passing: 7 (14 DlqAdmin.Tests total; 117 Shared.Models.Tests; 48 Onboarding.Function.Tests; 79 Amendment.Function.Tests — all unchanged)
+Fix applied (iteration 2): `togglePayload` condition corrected from `=== 'none'` to `=== 'block'` so the first click on Expand reveals the payload immediately. The inline `style` attribute starts as `''`, not `'none'`, so checking for `'block'` is the correct sentinel for the open state.
 Notes: >
   wwwroot/index.html is plain HTML with inline JavaScript; no npm, no framework, no build step.
   Queue selector: two buttons (onboarding-deadletter / amendment-deadletter); clicking re-fetches
