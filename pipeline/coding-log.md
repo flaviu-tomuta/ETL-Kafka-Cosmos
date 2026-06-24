@@ -1,5 +1,32 @@
 # Coding Log
 
+## STORY-20 — Audit service — ILogger structured logging
+Status: complete
+Files produced:
+- src/Shared.Models/Audit/AuditService.cs
+- src/Shared.Models/DependencyInjection/ServiceCollectionExtensions.cs (updated — added IAuditService scoped registration)
+- src/Amendment.Function/DependencyInjection/AmendmentServiceExtensions.cs (updated — removed NullAuditService stub)
+- tests/Shared.Models.Tests/Audit/AuditServiceTests.cs
+Tests written: 4
+Tests passing: 4 (111 Shared.Models.Tests total; 79 Amendment.Function.Tests; 48 Onboarding.Function.Tests)
+Notes: >
+  AuditService (sealed) placed in Shared.Models/Audit/ so it is accessible to both
+  onboarding and amendment function apps without circular references.
+  FlushAsync emits LogInformation with exact template from architecture doc:
+  "MessageProcessed {MessageId} {EntityId} {TopicRole} {StepsApplied} {WasApiFallback} {TotalDurationMs}ms"
+  where EntityId = record.PartyId and StepsApplied = string.Join(",", record.Hydration.StepsApplied).
+  In STORY-21 the constructor will gain AuditMetricsContainer and TelemetryClient parameters
+  and the Cosmos flush will be added — the STORY-20 constructor (ILogger only) is intentionally minimal.
+  IAuditService registered as Scoped in AddSharedServices() — consistent with IdempotencyService
+  pattern; both apps call AddSharedServices() in Program.cs so both resolve AuditService.
+  NullAuditService stub removed from AmendmentServiceExtensions — superseded by the real registration.
+  AC2 (VersionGapDetected), AC3 (DuplicateMessageSkipped), AC4 (MessageDeadLettered) are satisfied
+  by existing implementations in VersionGapDetector, AmendmentKafkaFunction, and DeadLetterService
+  respectively — tests for those ACs already existed from STORY-13, STORY-14, and STORY-18.
+  All 111 Shared.Models.Tests pass (107 pre-existing + 4 new).
+  All 79 Amendment.Function.Tests pass (unchanged).
+  All 48 Onboarding.Function.Tests pass (unchanged).
+
 ## STORY-19 — Batch error handling
 Status: complete
 Files produced:

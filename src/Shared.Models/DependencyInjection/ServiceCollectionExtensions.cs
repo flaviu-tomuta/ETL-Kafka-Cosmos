@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Polly;
+using Shared.Models.Audit;
 using Shared.Models.Contracts;
 using Shared.Models.ErrorClassification;
 using Shared.Models.Idempotency;
@@ -14,6 +15,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<IErrorClassifier, ErrorClassifier>();
         services.AddScoped<IIdempotencyService, IdempotencyService>();
+        services.AddScoped<IAuditService, AuditService>();
         services.AddMemoryCache();
         services.AddScoped<IVersionGapDetector, VersionGapDetector>();
         services.AddHttpClient<IEntityApiClient, EntityApiClient>()

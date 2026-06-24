@@ -6,7 +6,6 @@ using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Models.Contracts;
-using Shared.Models.Models;
 
 namespace Amendment.Function.DependencyInjection;
 
@@ -29,14 +28,8 @@ public static class AmendmentServiceExtensions
         services.AddScoped<IRetryService, RetryService>();
         services.AddScoped<IDeadLetterService, DeadLetterService>();
 
-        // IAuditService — real implementation wired in STORY-21
-        services.AddScoped<IAuditService, NullAuditService>();
 
         return services;
     }
 
-    private sealed class NullAuditService : IAuditService
-    {
-        public Task FlushAsync(AuditRecord record) => Task.CompletedTask;
-    }
 }
