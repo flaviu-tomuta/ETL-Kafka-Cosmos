@@ -6,6 +6,7 @@ builder.Services.AddSingleton<ServiceBusClient>(
     _ => new ServiceBusClient(builder.Configuration["ServiceBusConnection"]!));
 
 WebApplication app = builder.Build();
+app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.MapGet("/api/dlq/{queueName}", async (string queueName, ServiceBusClient client) =>

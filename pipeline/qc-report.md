@@ -1,3 +1,5 @@
+<!-- QC-STORY-23-ITER-1 | 2026-06-24T18:04:55Z | pending -->
+
 ## QC report — STORY-22 — iteration 1 (re-review after fix)
 Reviewed at: 2026-06-24T11:00:00Z
 

@@ -36,3 +36,5 @@
 /Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/DlqAdmin/obj/Debug/net10.0/DlqAdmin.pdb
 /Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/DlqAdmin/obj/Debug/net10.0/DlqAdmin.genruntimeconfig.cache
 /Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/DlqAdmin/obj/Debug/net10.0/ref/DlqAdmin.dll
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/DlqAdmin/bin/Debug/net10.0/DlqAdmin.staticwebassets.runtime.json
+/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/DlqAdmin/obj/Debug/net10.0/compressed/no5a7dgaar-{0}-xnjopgsx62-xnjopgsx62.gz

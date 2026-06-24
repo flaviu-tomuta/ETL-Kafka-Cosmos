@@ -1,5 +1,31 @@
 # Coding Log
 
+## STORY-23 — DLQ admin tool — UI
+Status: complete
+Files produced:
+- src/DlqAdmin/Program.cs (updated — added app.UseDefaultFiles() before app.UseStaticFiles())
+- src/DlqAdmin/wwwroot/index.html
+- tests/DlqAdmin.Tests/UI/UiTests.cs
+Tests written: 7
+Tests passing: 7 (14 DlqAdmin.Tests total; 117 Shared.Models.Tests; 48 Onboarding.Function.Tests; 79 Amendment.Function.Tests — all unchanged)
+Notes: >
+  wwwroot/index.html is plain HTML with inline JavaScript; no npm, no framework, no build step.
+  Queue selector: two buttons (onboarding-deadletter / amendment-deadletter); clicking re-fetches
+  messages via fetch('/api/dlq/{queueName}') and re-renders both the message list and metric cards.
+  Message cards display partyId, topic, partition, offset, reason, attempts, deadLetteredAt from
+  the API response. Expand button toggles a <pre class="payload"> element with the raw body.
+  Requeue: confirm() dialog → fetch POST /api/dlq/{queueName}/requeue/{messageId} → loadMessages().
+  Discard: confirm() dialog → fetch DELETE /api/dlq/{queueName}/{messageId} → loadMessages().
+  Metric cards: count total messages; count per-reason for EntityNotFound, InvalidStateTransition,
+  HydrationFailed by filtering m.reason from the API response.
+  Program.cs updated: app.UseDefaultFiles() added before app.UseStaticFiles() so GET "/" serves
+  index.html automatically in the browser; existing STORY-22 API tests are unaffected.
+  Integration tests use WebApplicationFactory<Program>; wwwroot/index.html is copied to the test
+  output directory via project reference (Microsoft.NET.Sdk.Web content inclusion) and served at
+  /index.html by UseStaticFiles(). Tests assert HTTP 200 text/html and verify all AC-required
+  strings are present in the HTML content.
+  All 258 pre-existing tests (117+48+79+14) pass unchanged.
+
 ## STORY-22 — DLQ admin tool — API
 Status: complete
 Files produced:
