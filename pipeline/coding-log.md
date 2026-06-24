@@ -1,5 +1,30 @@
 # Coding Log
 
+## STORY-19 — Batch error handling
+Status: complete
+Files produced:
+- tests/Onboarding.Function.Tests/Functions/OnboardingKafkaFunctionTests.cs (updated — fixed FakeRetryService compile error; added 2 STORY-19 tests)
+- tests/Amendment.Function.Tests/Functions/AmendmentKafkaFunctionTests.cs (updated — added 2 STORY-19 tests)
+Tests written: 4
+Tests passing: 4 (48 Onboarding.Function.Tests total; 79 Amendment.Function.Tests total)
+Notes: >
+  No new production code required — the batch error handling loop in both OnboardingKafkaFunction
+  and AmendmentKafkaFunction was already fully implemented in STORY-8 and STORY-14/18.
+  STORY-19 deliverables:
+  (1) Fixed FakeRetryService in OnboardingKafkaFunctionTests.cs — missing bool isImmediate = false
+  parameter (added to IRetryService in STORY-18) caused a compile error that blocked all 46
+  Onboarding tests. Fixed by adding the optional parameter to the fake's EnqueueAsync signature.
+  (2) Added ProcessBatchAsync_FiveMessageBatch_ThirdMessageThrowsJsonException_FourSucceedAndOneDeadLettered
+  to both OnboardingKafkaFunctionTests and AmendmentKafkaFunctionTests — tests the exact 5-message
+  scenario from AC1: message 3 throws JsonException; messages 1, 2, 4, 5 succeed; BatchCompleted
+  log shows total=5, succeeded=4, permanentFailures=1, transientFailures=0.
+  (3) Added ProcessBatchAsync_FailedMessage_LogsMessageProcessingFailedWithStructuredProperties
+  to both test files — verifies the per-message error log entry carries MessageId, EntityId per
+  the STORY-19 technical notes.
+  All 107 Shared.Models.Tests pass. 48 Onboarding.Function.Tests pass (46 pre-existing + 2 new).
+  79 Amendment.Function.Tests pass (77 pre-existing + 2 new).
+
+
 ## STORY-18 — Dead-letter and retry flow — Service Bus integration
 Status: complete
 Files produced:
