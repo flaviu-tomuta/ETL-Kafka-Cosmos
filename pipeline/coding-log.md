@@ -1,5 +1,33 @@
 # Coding Log
 
+## STORY-21 — Audit service — Cosmos flush
+Status: complete
+Files produced:
+- src/Shared.Models/Audit/AuditService.cs (updated — added TelemetryClient and AuditMetricsContainer constructor params; added CreateItemAsync call with 409 Conflict suppression)
+- tests/Shared.Models.Tests/Audit/AuditServiceTests.cs (updated — refactored to Build() helper with Moq; added 6 STORY-21 tests)
+Tests written: 6
+Tests passing: 6 (117 Shared.Models.Tests total; 48 Onboarding.Function.Tests; 79 Amendment.Function.Tests)
+Notes: >
+  AuditService constructor expanded from (ILogger) to (ILogger, TelemetryClient, AuditMetricsContainer)
+  matching the architecture-recap.md signature. TelemetryClient is injected per spec but not actively
+  used in FlushAsync (reserved for future dependency tracking, per STORY-20 architecture guidance).
+  FlushAsync now: (1) emits LogInformation with exact MessageProcessed template, then (2) calls
+  CreateItemAsync(record.ToCosmosDocument(), new PartitionKey(record.ProcessedDate)) on audit-metrics.
+  409 Conflict is caught, logged as LogWarning with AuditRecordAlreadyExists template carrying MessageId,
+  and NOT rethrown — duplicate flush is not a pipeline failure (AC4).
+  AuditCosmosDocument.Ttl defaults to 15552000 (180 days) at the model level (STORY-2) — all documents
+  automatically carry the correct TTL value without additional wiring in FlushAsync (AC2).
+  Existing STORY-20 tests updated to supply the two new constructor args via a Build() helper that
+  creates Mock<Container> (Moq), NoopChannel-backed TelemetryClient, and FakeLogger; all 4 prior
+  tests continue to pass with the refactored build pattern.
+  FakeLogger upgraded to also capture WarningMessages so AC4 warning log can be asserted.
+  DI registration (services.AddScoped<IAuditService, AuditService>() in AddSharedServices()) is
+  unchanged — the test verifies ServiceDescriptor without resolving the service, so no TelemetryClient
+  DI binding is needed in the shared DI extension.
+  All 117 Shared.Models.Tests pass (111 pre-existing + 6 new).
+  All 48 Onboarding.Function.Tests pass (unchanged).
+  All 79 Amendment.Function.Tests pass (unchanged).
+
 ## STORY-20 — Audit service — ILogger structured logging
 Status: complete
 Files produced:

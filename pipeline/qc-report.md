@@ -1,3 +1,5 @@
+<!-- QC-STORY-21-ITER-1 | 2026-06-24T14:40:42Z | pending -->
+
 <!-- QC-STORY-20-ITER-1 | 2026-06-24T14:12:04Z | pending -->
 
 ## QC report — STORY-20 — iteration 1

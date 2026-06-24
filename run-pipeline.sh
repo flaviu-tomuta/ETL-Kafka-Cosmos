@@ -393,7 +393,7 @@ run_agent_4() {
       If not on $FEATURE_BRANCH, run: git checkout $FEATURE_BRANCH
     - Stage only the files listed in pipeline/coding-log.md for STORY-${story_id}
     - Commit with the required message format from CLAUDE.md
-    - Push to the feature branch ONLY: git push origin $FEATURE_BRANCH
+    - You do not have to push to the remote — just prepare the commit and log the details
     - Do NOT push to $MAIN_BRANCH under any circumstances
     - Append the result to pipeline/push-log.md including the remote URL and commit hash" \
     --allowedTools "Read,Write,Bash" \
