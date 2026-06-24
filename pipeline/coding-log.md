@@ -1,5 +1,28 @@
 # Coding Log
 
+## STORY-25 — CI/CD pipeline — GitHub Actions workflows
+Status: complete
+Files produced:
+- .github/workflows/ci.yml (updated — added commented deploy job stub)
+- .github/workflows/pr-checks.yml (verified complete — matches architecture spec)
+- tests/Shared.Models.Tests/CiCd/WorkflowFileTests.cs
+Tests written: 14
+Tests passing: 14 (153 Shared.Models.Tests total; 48 Onboarding.Function.Tests; 79 Amendment.Function.Tests; 14 DlqAdmin.Tests — all unchanged)
+Notes: >
+  Both workflow files already existed from a prior implementation; ci.yml was missing the
+  commented-out deploy job stub required by AC5. pr-checks.yml was complete and correct.
+  TDD approach: WorkflowFileTests.cs written first — two tests
+  (CiWorkflow_HasCommentedOutDeployJobWithFunctionsAction and CiWorkflow_DeployJob_IsCommentedOut)
+  failed because the deploy stub was absent from ci.yml. Deploy stub comment block added to
+  ci.yml (matching the exact structure from docs/architecture-recap.md "When Azure access is
+  available" section: deploy-dev job, needs build-and-test, Azure/functions-action@v1,
+  app-name onboarding-func-dev, AZURE_FUNCTIONAPP_PUBLISH_PROFILE secret). Both tests then pass.
+  Branch protection (AC4) is a GitHub repository settings concern and cannot be tested via
+  file content; it is documented in the architecture-recap.md and must be applied manually
+  via GitHub Settings → Branches → main — this is a justified exception per the blocker-note
+  provision in CLAUDE.md.
+  All 14 CI/CD tests pass. All 294 pre-existing tests unchanged.
+
 ## STORY-24 — Local development environment setup
 Status: complete
 Files produced:

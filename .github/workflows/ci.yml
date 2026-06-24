@@ -54,3 +54,20 @@ jobs:
           name: function-app-${{ github.sha }}
           path: ./publish
           retention-days: 7
+
+  # Uncomment when Azure access is available
+  # deploy-dev:
+  #   name: Deploy to Dev
+  #   needs: build-and-test
+  #   runs-on: ubuntu-latest
+  #   environment: dev
+  #   steps:
+  #     - uses: actions/download-artifact@v4
+  #       with:
+  #         name: function-app-${{ github.sha }}
+  #         path: ./publish
+  #     - uses: Azure/functions-action@v1
+  #       with:
+  #         app-name: onboarding-func-dev
+  #         package: ./publish
+  #         publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
