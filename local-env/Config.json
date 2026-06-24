@@ -1,0 +1,15 @@
+{
+  "UserConfig": {
+    "Namespaces": [
+      {
+        "Name": "local-namespace",
+        "Queues": [
+          { "Name": "onboarding-retry",      "Properties": { "DeadLetterOnMessageExpiration": true } },
+          { "Name": "onboarding-deadletter", "Properties": {} },
+          { "Name": "amendment-retry",       "Properties": { "DeadLetterOnMessageExpiration": true } },
+          { "Name": "amendment-deadletter",  "Properties": {} }
+        ]
+      }
+    ]
+  }
+}
