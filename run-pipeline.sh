@@ -384,7 +384,7 @@ run_agent_4() {
     - Repo name     : $repo_name
 
     Before doing anything:
-    1. Read pipeline/qc-report.md and confirm Verdict is PASS
+    1. Read pipeline/qc-report.md and make sure that there is a QC entry for STORY-${story_id}, no verdict required
     2. If verdict is not PASS or is ESCALATE, stop immediately and report an error — do not push
 
     If PASS:

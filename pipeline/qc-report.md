@@ -1,6 +1,100 @@
-<!-- QC-STORY-21-ITER-1 | 2026-06-24T14:40:42Z | pending -->
+## QC report — STORY-22 — iteration 1 (re-review after fix)
+Reviewed at: 2026-06-24T11:00:00Z
 
-<!-- QC-STORY-20-ITER-1 | 2026-06-24T14:12:04Z | pending -->
+### Verdict: PASS
+
+### Issues found
+
+None. The single issue from the prior review (missing Partition, Offset, Attempts, DeadLetteredAt assertions in `Get_WithMessages_ReturnsPeekedMessagesAsJson`) has been resolved — all 4 assertions are now present at lines 92–95 of `DlqApiTests.cs`.
+
+### Passed checks
+
+- [x] **AC1 — GET returns all 9 required fields**: `Get_WithMessages_ReturnsPeekedMessagesAsJson` now asserts all 9 fields listed in the AC — `messageId == "msg-1"`, `partyId == "P1"`, `topic == "onboarding-topic"`, `body == "{\"partyId\":\"P1\"}"`, `partition == 0`, `offset == 100L`, `attempts == 3`, `deadLetteredAt != default`, `reason` key present ✓
+- [x] **AC1 (edge case) — GET with empty queue returns empty array**: `Get_WithEmptyQueue_ReturnsEmptyArray` asserts 200 OK and empty JSON array ✓
+- [x] **AC2 — POST requeue moves to retry queue with attemptCount=0**: `Requeue_WhenMessageFound_SendsToRetryQueueWithAttemptCountZeroAndReturnsOk` asserts 200 OK, `requeued = "msg-1"`, `CreateSender("onboarding-retry")`, `SendMessageAsync` with `MessageId == "msg-1"` and `(int)ApplicationProperties["attemptCount"] == 0`, `CompleteMessageAsync` called once ✓
+- [x] **AC3 — POST and DELETE with missing messageId → 404**: `Requeue_WhenMessageNotFound_ReturnsNotFound` ✓; `Discard_WhenMessageNotFound_ReturnsNotFound` ✓
+- [x] **AC4 — DELETE removes message and returns 200**: `Discard_WhenMessageFound_CompletesMessageAndReturnsOk` asserts 200 OK, `discarded = "msg-1"`, `CompleteMessageAsync` called once ✓
+- [x] **AC5 — GET uses PeekMessagesAsync (non-destructive)**: `Get_CallsPeekMessagesAsync_NotReceiveMessagesAsync` verifies `PeekMessagesAsync(50, ...)` called once and `ReceiveMessagesAsync` never called ✓
+- [x] **Architecture alignment — all 3 endpoints, receiver options, POST/DELETE routing**: unchanged and verified in prior review ✓
+- [x] **Architecture alignment — DELETE uses CompleteMessageAsync (correct) vs architecture doc's DeadLetterMessageAsync (spec error)**: implementation is semantically correct for "discard permanently" ✓
+- [x] **Regression safety**: coding log confirms all 7 DlqAdmin.Tests pass; all 244 pre-existing tests (117 + 48 + 79) unchanged ✓
+
+### Recommendation
+
+PASS → approved for git push
+
+---
+
+## QC report — STORY-22 — iteration 1
+Reviewed at: 2026-06-24T10:00:00Z
+
+### Verdict: FAIL
+
+### Issues found
+
+- [ ] **AC1 — GET response fields incomplete test coverage** — `tests/DlqAdmin.Tests/Api/DlqApiTests.cs` `Get_WithMessages_ReturnsPeekedMessagesAsJson`
+      The AC explicitly lists 9 required response fields: MessageId, PartyId, Topic, **Partition, Offset**, Reason, **Attempts**, **DeadLetteredAt**, Body. The test asserts MessageId, PartyId, Topic, Body, and presence of `reason`, but does not assert values for `partition`, `offset`, `attempts`, or `deadLetteredAt`. All four are present in the implementation and in the test message fixture (partition=0, offset=100, attemptCount=3, enqueuedTime set), so assertions can be added directly to the existing test.
+      Suggested fix:
+      ```csharp
+      Assert.Equal(0,     result[0].GetProperty("partition").GetInt32());
+      Assert.Equal(100L,  result[0].GetProperty("offset").GetInt64());
+      Assert.Equal(3,     result[0].GetProperty("attempts").GetInt32());
+      Assert.NotEqual(default, result[0].GetProperty("deadLetteredAt").GetDateTimeOffset());
+      ```
+
+### Passed checks
+
+- [x] **AC2 — POST requeue moves message to retry queue with attemptCount=0**: `Requeue_WhenMessageFound_SendsToRetryQueueWithAttemptCountZeroAndReturnsOk` asserts 200 OK, body `{ requeued = "msg-1" }`, `CreateSender("onboarding-retry")`, `SendMessageAsync` with `MessageId == "msg-1"` and `(int)ApplicationProperties["attemptCount"] == 0`, `CompleteMessageAsync` called once ✓
+- [x] **AC3 — POST and DELETE with missing messageId → 404**: `Requeue_WhenMessageNotFound_ReturnsNotFound` asserts 404 when empty queue received ✓; `Discard_WhenMessageNotFound_ReturnsNotFound` asserts 404 ✓
+- [x] **AC4 — DELETE removes message and returns 200**: `Discard_WhenMessageFound_CompletesMessageAndReturnsOk` asserts 200 OK, body `{ discarded = "msg-1" }`, `CompleteMessageAsync` called once with correct message ✓
+- [x] **AC5 — GET uses PeekMessagesAsync (non-destructive)**: `Get_CallsPeekMessagesAsync_NotReceiveMessagesAsync` verifies `PeekMessagesAsync(50, null, ...)` called once and `ReceiveMessagesAsync` never called ✓
+- [x] **Architecture alignment — endpoints**: GET `/api/dlq/{queueName}`, POST `/api/dlq/{queueName}/requeue/{messageId}`, DELETE `/api/dlq/{queueName}/{messageId}` — all three present ✓
+- [x] **Architecture alignment — GET receiver options**: `SubQueue = SubQueue.DeadLetter`, `ReceiveMode = ServiceBusReceiveMode.PeekLock` ✓; `PeekMessagesAsync(maxMessages: 50)` ✓
+- [x] **Architecture alignment — POST**: `ReceiveMessagesAsync` → find by MessageId → `new ServiceBusMessage(target.Body)` → `attemptCount = 0` → `CreateSender(queueName.Replace("-deadletter", "-retry"))` → `CompleteMessageAsync` ✓
+- [x] **Architecture alignment — DELETE**: Implementation uses `CompleteMessageAsync` which correctly and permanently removes the message from the dead-letter queue. Note: architecture doc shows `DeadLetterMessageAsync` here which would attempt to sub-dead-letter an already-dead-lettered message (semantically incorrect); `CompleteMessageAsync` is the right operation for the "discard permanently" intent ✓
+- [x] **Architecture alignment — ServiceBusClient**: `builder.Services.AddSingleton<ServiceBusClient>(...)` singleton factory reading `ServiceBusConnection` from `IConfiguration` ✓
+- [x] **Architecture alignment — app.UseStaticFiles()**: present in `Program.cs` ✓
+- [x] **Architecture alignment — public partial class Program**: `public partial class Program { }` present at bottom of `Program.cs` enabling `WebApplicationFactory<Program>` in tests ✓
+- [x] **Test approach**: `WebApplicationFactory<Program>` with `services.RemoveAll<ServiceBusClient>(); services.AddSingleton(mockClient.Object)` correctly replaces the real client before the application builds — avoids `ArgumentNullException` when `ServiceBusConnection` is absent in test environment ✓
+- [x] **AC1 (partial) — GET returns JSON array**: `Get_WithMessages_ReturnsPeekedMessagesAsJson` asserts 200 OK, single-element JSON array, MessageId "msg-1", PartyId "P1", Topic "onboarding-topic", Body, and presence of `reason` key ✓
+- [x] **Regression safety**: Coding log confirms all 244 pre-existing tests pass unchanged (117 Shared.Models.Tests + 48 Onboarding.Function.Tests + 79 Amendment.Function.Tests) ✓
+
+### Recommendation
+
+FAIL → return to coding agent with issues listed above
+
+---
+
+## QC report — STORY-21 — iteration 1
+Reviewed at: 2026-06-24T10:00:00Z
+
+### Verdict: PASS
+
+### Issues found
+
+**Observation (not a failure):** `_telemetryClient` is injected in the constructor and stored in a private field but never read in the current method body. This matches the architecture document which shows `TelemetryClient` as a constructor parameter for `AuditService` — it is reserved for future dependency tracking calls (`TrackDependency`) that will be added when external API tracing is wired. The implementation is correct per spec; no code change is needed.
+
+### Passed checks
+
+- [x] **AC1 — CreateItemAsync called on audit-metrics with mapped document**: `FlushAsync_CallsCreateItemAsync_WithMappedDocument` asserts `CreateItemAsync` called exactly once with `d.Id == "msg-42"`, `d.MessageId == "msg-42"`, `d.PartyId == "party-99"` ✓; call comes after `LogInformation` (order: log first, then persist) ✓
+- [x] **AC2 — document id = messageId, partition key = processedDate, ttl = 15552000**: `FlushAsync_CallsCreateItemAsync_WithProcessedDate_AsPartitionKey` asserts `new PartitionKey("2026-06-24")` ✓; `FlushAsync_DocumentHasTtl_15552000` asserts `d.Ttl == 15552000` ✓; `FlushAsync_CallsCreateItemAsync_WithMappedDocument` asserts `d.Id == messageId` ✓
+- [x] **AC3 — ToCosmosDocument maps all hydration fields**: `ToCosmosDocument_IncludesAllHydrationFields` directly exercises `record.ToCosmosDocument()` and asserts `StepsApplied`, `StepsSkipped`, `TotalDurationMs` (142), `StepBreakdown.Count == 3`, `StepBreakdown[0].Step == "AddressEnrichment"`, `StepBreakdown[0].Applied == true`, `StepBreakdown[2].Applied == false` ✓
+- [x] **AC4 — 409 Conflict → Warning log, no rethrow**: `FlushAsync_When409Conflict_DoesNotRethrow` asserts no exception thrown (Record.ExceptionAsync returns null) ✓; `FlushAsync_When409Conflict_LogsWarning` asserts single warning message containing MessageId ✓
+- [x] **Architecture alignment — AuditService constructor**: `(ILogger<AuditService>, TelemetryClient, AuditMetricsContainer)` — matches architecture-recap.md exactly ✓; `_auditContainer = auditContainer.Value` correctly unwraps the `AuditMetricsContainer` wrapper ✓
+- [x] **Architecture alignment — Cosmos flush sequence**: `LogInformation` first, then `CreateItemAsync(record.ToCosmosDocument(), new PartitionKey(record.ProcessedDate))` — matches architecture doc ✓
+- [x] **Architecture alignment — container**: `AuditMetricsContainer` (wrapping the `audit-metrics` Container), partition key `/processedDate` ✓
+- [x] **Architecture alignment — 409 catch**: `catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.Conflict)` — catches Conflict only, all other CosmosExceptions propagate ✓
+- [x] **Architecture alignment — MessageProcessed log preserved**: STORY-20 `LogInformation` template unchanged in STORY-21 — `_logger.LogInformation("MessageProcessed {MessageId} {EntityId} {TopicRole} {StepsApplied} {WasApiFallback} {TotalDurationMs}ms", ...)` ✓; existing STORY-20 tests updated to call `SetupCreateItemSuccess(mockContainer)` so they continue to pass ✓
+- [x] **DI registration — unchanged**: `services.AddScoped<IAuditService, AuditService>()` in `AddSharedServices()` — unchanged; `AddSharedServices_RegistersIAuditService_AsScoped` DI test asserts Scoped lifetime and `AuditService` type ✓; DI test uses `ServiceDescriptor` check (not `GetRequiredService`) so TelemetryClient not required to be registered in shared DI extension ✓
+- [x] **Logging — FakeLogger upgraded**: `FakeLogger` now captures both `InfoMessages` and `WarningMessages`, enabling AC4 warning log assertion ✓
+- [x] **Lean code**: `FlushAsync` is 16 lines; no speculative abstractions; `catch` block is minimal (log warning + return) ✓
+- [x] **Regression safety**: Coding log confirms all 117 Shared.Models.Tests pass (111 pre-existing + 6 new); all 48 Onboarding.Function.Tests and 79 Amendment.Function.Tests pass unchanged ✓
+
+### Recommendation
+
+PASS → approved for git push
+
+---
 
 ## QC report — STORY-20 — iteration 1
 Reviewed at: 2026-06-24T09:00:00Z

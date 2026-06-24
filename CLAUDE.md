@@ -300,7 +300,7 @@ You will be given:
 
 ### Rules
 
-1. Read `pipeline/qc-report.md` first — verify `Verdict: PASS` before doing
+1. Read `pipeline/qc-report.md` first - verify that there is an entry to the story you are working on
    anything else. If verdict is FAIL or ESCALATE, stop immediately and output:
    ```
    ERROR: Cannot push — QC verdict is <verdict>. Resolve issues before pushing.

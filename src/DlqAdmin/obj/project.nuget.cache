@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "dgSpecHash": "PIxWCvued9c=",
+  "success": true,
+  "projectFilePath": "/Users/flaviu.tomuta/Documents/Projects/NFCU_Project/ETL-Kafka-Cosmos/src/DlqAdmin/DlqAdmin.csproj",
+  "expectedPackageFiles": [
+    "/Users/flaviu.tomuta/.nuget/packages/azure.core/1.44.1/azure.core.1.44.1.nupkg.sha512",
+    "/Users/flaviu.tomuta/.nuget/packages/azure.core.amqp/1.3.1/azure.core.amqp.1.3.1.nupkg.sha512",
+    "/Users/flaviu.tomuta/.nuget/packages/azure.messaging.servicebus/7.19.0/azure.messaging.servicebus.7.19.0.nupkg.sha512",
+    "/Users/flaviu.tomuta/.nuget/packages/microsoft.azure.amqp/2.6.9/microsoft.azure.amqp.2.6.9.nupkg.sha512",
+    "/Users/flaviu.tomuta/.nuget/packages/microsoft.bcl.asyncinterfaces/6.0.0/microsoft.bcl.asyncinterfaces.6.0.0.nupkg.sha512",
+    "/Users/flaviu.tomuta/.nuget/packages/system.clientmodel/1.1.0/system.clientmodel.1.1.0.nupkg.sha512",
+    "/Users/flaviu.tomuta/.nuget/packages/system.memory.data/6.0.0/system.memory.data.6.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

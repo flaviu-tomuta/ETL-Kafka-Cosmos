@@ -1,5 +1,35 @@
 # Coding Log
 
+## STORY-22 — DLQ admin tool — API
+Status: complete
+Files produced:
+- src/DlqAdmin/DlqAdmin.csproj
+- src/DlqAdmin/Program.cs
+- src/DlqAdmin/appsettings.json
+- src/DlqAdmin/appsettings.Development.json
+- tests/DlqAdmin.Tests/DlqAdmin.Tests.csproj
+- tests/DlqAdmin.Tests/Api/DlqApiTests.cs
+Tests written: 7
+Tests passing: 7 (7 DlqAdmin.Tests; 117 Shared.Models.Tests; 48 Onboarding.Function.Tests; 79 Amendment.Function.Tests — all unchanged)
+Notes: >
+  DlqAdmin is a Microsoft.NET.Sdk.Web minimal API project targeting net10.0.
+  ServiceBusClient registered as a lazy singleton factory so WebApplicationFactory tests can
+  replace it before Build() — avoids ArgumentNullException when ServiceBusConnection is absent.
+  GET: CreateReceiver(SubQueue=DeadLetter, PeekLock) + PeekMessagesAsync(50) — non-destructive.
+  POST (requeue): ReceiveMessagesAsync, find by MessageId, build new ServiceBusMessage with
+  attemptCount=0, send to {queueName}.Replace("-deadletter","-retry"), CompleteMessageAsync.
+  DELETE (discard): ReceiveMessagesAsync, find by MessageId, CompleteMessageAsync to remove.
+  Both POST and DELETE return 404 when MessageId not found in the received batch (AC3).
+  ApplicationProperties set via indexer (not object-initializer block) because
+  ServiceBusMessage.ApplicationProperties has no setter.
+  ServiceBusModelFactory.ServiceBusReceivedMessage in Azure.Messaging.ServiceBus 7.19.0 does not
+  expose deadLetterReason as a parameter; DeadLetterReason is null for plain-queue messages —
+  test verifies the response key is present, not its exact value.
+  app.UseStaticFiles() wired in Program.cs; wwwroot/ not created here (STORY-23 responsibility).
+  public partial class Program {} enables WebApplicationFactory<Program> in the test project.
+  All 244 pre-existing tests (117+48+79) pass unchanged.
+
+
 ## STORY-21 — Audit service — Cosmos flush
 Status: complete
 Files produced:
